@@ -1,0 +1,82 @@
+#pragma once
+
+// ===========================================================================
+// 開發板：ESP32 NodeMCU-32S（ESP32-WROOM-32 / 30-pin）
+// ===========================================================================
+// 腳位參考：docs/NodeMcu-32S_接腳圖-1.png、docs/NodeMcu-32S_接腳圖-2.png
+//
+// 左排（EN 在上、VIN 在下）：
+//   EN, GPIO36(VP), GPIO39(VN), GPIO34, GPIO35, GPIO32, GPIO33,
+//   GPIO25, GPIO26, GPIO27, GPIO14, GPIO12, GPIO13, GND, VIN
+//
+// 右排（GPIO23 在上、3V3 在下）：
+//   GPIO23, GPIO22(SCL), GPIO1(TX0), GPIO3(RX0), GPIO21(SDA), GPIO19,
+//   GPIO18, GPIO5, GPIO17(TX2), GPIO16(RX2), GPIO4, GPIO2, GPIO15, GND, 3V3
+//
+// 選用原則：
+//   * 四顆 SG90 使用 GPIO25 / 26 / 27 / 14：在左排彼此相鄰、皆可輸出 PWM，
+//     且不是 strapping 腳，接線與除錯都最單純。
+//   * OLED 使用 GPIO21(SDA) / GPIO22(SCL)：NodeMCU-32S 的預設 I2C 腳位。
+//   * GPIO34～39 只能輸入，絕對不可當伺服馬達訊號腳。
+//   * GPIO0 / 2 / 5 / 12 / 15 為 strapping 腳，本專案只用 GPIO2 驅動板載 LED。
+// ===========================================================================
+
+// ---------------- 開發板 / 韌體資訊 ----------------
+#define BOARD_NAME "ESP32 NodeMCU-32S"
+#define FW_NAME    "DogBot"
+#define FW_VERSION "1.2.0"
+
+// ---------------- OLED SSD1306 (I2C) ----------------
+// NodeMCU-32S 右排：GPIO22 = SCL、GPIO21 = SDA
+#define OLED_SDA    21
+#define OLED_SCL    22
+#define OLED_WIDTH  128
+#define OLED_HEIGHT 64
+#define OLED_RESET  -1
+#define OLED_ADDR   0x3C
+
+// ---------------- SG90 伺服馬達 ----------------
+// 編號：0=前左(M1) 1=前右(M2) 2=後左(M3) 3=後右(M4)
+// NodeMCU-32S 左排由上往下第 8～11 腳：GPIO25、26、27、14
+#define SERVO_PIN_FL 25
+#define SERVO_PIN_FR 26
+#define SERVO_PIN_RL 27
+#define SERVO_PIN_RR 14
+#define SERVO_MIN_US 500
+#define SERVO_MAX_US 2400
+#define SERVO_CENTER 90
+
+// ---------------- 板載狀態燈 ----------------
+// NodeMCU-32S 的藍色 LED 接在 GPIO2，低電位點亮
+#define STATUS_LED 2
+
+// ---------------- WiFi ----------------
+#define WIFI_CONFIG_FILE "/wifi.txt"
+#define AP_SSID_PREFIX   "DogBot-"   // 後方自動接上 MAC 後 4 碼
+#define AP_PASSWORD      "12345678"
+#define WIFI_RETRY_MS    15000       // STA 斷線後重試間隔（AP 熱點常駐）
+
+// ---------------- 伺服馬達校正 ----------------
+#define SERVO_CONFIG_FILE "/servo.cfg"
+
+// ===========================================================================
+// 編譯期腳位檢查：接錯腳位會直接編譯失敗，而不是上電後才發現
+// ===========================================================================
+#define CONFIG_IS_INPUT_ONLY(p) ((p) >= 34 && (p) <= 39)
+
+#if CONFIG_IS_INPUT_ONLY(SERVO_PIN_FL) || CONFIG_IS_INPUT_ONLY(SERVO_PIN_FR) || \
+    CONFIG_IS_INPUT_ONLY(SERVO_PIN_RL) || CONFIG_IS_INPUT_ONLY(SERVO_PIN_RR)
+#error "伺服馬達不可使用 GPIO34~39：NodeMCU-32S 的這些腳位僅能輸入。"
+#endif
+
+#if CONFIG_IS_INPUT_ONLY(OLED_SDA) || CONFIG_IS_INPUT_ONLY(OLED_SCL)
+#error "OLED I2C 不可使用 GPIO34~39：NodeMCU-32S 的這些腳位僅能輸入。"
+#endif
+
+static_assert(SERVO_PIN_FL != SERVO_PIN_FR, "伺服馬達腳位重複：FL / FR");
+static_assert(SERVO_PIN_FL != SERVO_PIN_RL, "伺服馬達腳位重複：FL / RL");
+static_assert(SERVO_PIN_FL != SERVO_PIN_RR, "伺服馬達腳位重複：FL / RR");
+static_assert(SERVO_PIN_FR != SERVO_PIN_RL, "伺服馬達腳位重複：FR / RL");
+static_assert(SERVO_PIN_FR != SERVO_PIN_RR, "伺服馬達腳位重複：FR / RR");
+static_assert(SERVO_PIN_RL != SERVO_PIN_RR, "伺服馬達腳位重複：RL / RR");
+static_assert(OLED_SDA != OLED_SCL, "OLED SDA / SCL 不可使用同一腳位");
