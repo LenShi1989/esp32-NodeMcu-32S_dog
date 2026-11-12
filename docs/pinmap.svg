@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1480" width="1200" height="1480" role="img" aria-labelledby="title desc">
+  <title id="title">DogBot 使用的 ESP32 NodeMCU-32S 腳位標示圖</title>
+  <desc id="desc">38-pin NodeMCU-32S 正視圖，兩側各 19 腳，標出本專案使用的 GPIO25/26/27/14 伺服、GPIO21/22 OLED、GPIO2 狀態燈與電源腳位。</desc>
+
+  <defs>
+    <style>
+      text { font-family: "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif; }
+      .pinname { font-size: 12.5px; font-weight: 600; fill: #334155; }
+      .pinname.hl { fill: #0f172a; }
+      .hint { font-size: 9.5px; font-weight: 500; fill: #94a3b8; }
+      .hint.warn { fill: #b45309; }
+      .num { font-size: 9.5px; fill: #94a3b8; }
+      .tag { font-size: 11px; font-weight: 700; fill: #ffffff; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="1480" fill="#f8fafc"/>
+
+  <!-- ================= 標題 ================= -->
+  <text x="60" y="62" font-size="32" font-weight="700" fill="#0f172a">DogBot 腳位標示圖</text>
+  <text x="60" y="92" font-size="14" fill="#64748b">ESP32 NodeMCU-32S · 38-pin（兩側各 19 腳）· 依 docs/NodeMcu-32S_接腳圖-1.png</text>
+  <text x="60" y="116" font-size="12" fill="#94a3b8">彩色標籤＝本專案實際接線；腳位旁的小字為接腳圖-1 的排針編號（由下往上 1～19）</text>
+
+  <!-- ================= 開發板 ================= -->
+  <rect x="400" y="200" width="400" height="928" rx="20" fill="#1e293b" stroke="#0f172a" stroke-width="2"/>
+  <rect x="410" y="210" width="380" height="908" rx="14" fill="none" stroke="#334155"/>
+  <g transform="rotate(-90 600 664)">
+    <text x="600" y="656" text-anchor="middle" font-size="19" font-weight="700" fill="#e2e8f0">ESP32 NodeMCU-32S</text>
+    <text x="600" y="680" text-anchor="middle" font-size="11.5" fill="#94a3b8">38-pin · 兩側各 19 腳</text>
+  </g>
+  <text x="472" y="228" font-size="10.5" fill="#64748b">▲ 上方</text>
+  <text x="472" y="1108" font-size="10.5" fill="#64748b">▼ 下方</text>
+  <text x="600" y="1156" text-anchor="middle" font-size="11" fill="#64748b">由上往下第 1～19 腳（#19 在最上、#1 在最下）</text>
+
+  <!-- ================= 左排 ================= -->
+  <g>
+    <rect x="56" y="230" width="306" height="40" rx="10" fill="#f5f3ff"/>
+    <rect x="374" y="240" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="368" cy="250" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="412" y="254">#19</text>
+    <text class="pinname hl" x="356" y="254" text-anchor="end">3V3</text>
+    <rect x="60" y="237" width="96" height="26" rx="13" fill="#7c3aed"/>
+    <text class="tag" x="108" y="254" text-anchor="middle">OLED VCC</text>
+  </g>
+  <g>
+    <rect x="374" y="286" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="368" cy="296" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="412" y="300">#18</text>
+    <text class="pinname" x="356" y="300" text-anchor="end">EN</text>
+  </g>
+  <g>
+    <rect x="374" y="332" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="368" cy="342" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="412" y="346">#17</text>
+    <text class="pinname" x="356" y="346" text-anchor="end">GPIO36<tspan class="hint" dx="4">SVP</tspan></text>
+  </g>
+  <g>
+    <rect x="374" y="378" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="368" cy="388" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="412" y="392">#16</text>
+    <text class="pinname" x="356" y="392" text-anchor="end">GPIO39<tspan class="hint" dx="4">SVN</tspan></text>
+  </g>
+  <g>
+    <rect x="374" y="424" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="368" cy="434" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="412" y="438">#15</text>
+    <text class="pinname" x="356" y="438" text-anchor="end">GPIO34</text>
+  </g>
+  <g>
+    <rect x="374" y="470" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="368" cy="480" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="412" y="484">#14</text>
+    <text class="pinname" x="356" y="484" text-anchor="end">GPIO35</text>
+  </g>
+  <g>
+    <rect x="374" y="516" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="368" cy="526" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="412" y="530">#13</text>
+    <text class="pinname" x="356" y="530" text-anchor="end">GPIO32</text>
+  </g>
+  <g>
+    <rect x="374" y="562" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="368" cy="572" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="412" y="576">#12</text>
+    <text class="pinname" x="356" y="576" text-anchor="end">GPIO33</text>
+  </g>
+  <g>
+    <rect x="56" y="598" width="306" height="40" rx="10" fill="#fff7ed"/>
+    <rect x="374" y="608" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="368" cy="618" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="412" y="622">#11</text>
+    <text class="pinname hl" x="356" y="622" text-anchor="end">GPIO25</text>
+    <rect x="60" y="605" width="96" height="26" rx="13" fill="#f97316"/>
+    <text class="tag" x="108" y="622" text-anchor="middle">M1</text>
+  </g>
+  <g>
+    <rect x="56" y="644" width="306" height="40" rx="10" fill="#fff7ed"/>
+    <rect x="374" y="654" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="368" cy="664" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="412" y="668">#10</text>
+    <text class="pinname hl" x="356" y="668" text-anchor="end">GPIO26</text>
+    <rect x="60" y="651" width="96" height="26" rx="13" fill="#f97316"/>
+    <text class="tag" x="108" y="668" text-anchor="middle">M2</text>
+  </g>
+  <g>
+    <rect x="56" y="690" width="306" height="40" rx="10" fill="#fff7ed"/>
+    <rect x="374" y="700" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="368" cy="710" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="412" y="714">#9</text>
+    <text class="pinname hl" x="356" y="714" text-anchor="end">GPIO27</text>
+    <rect x="60" y="697" width="96" height="26" rx="13" fill="#f97316"/>
+    <text class="tag" x="108" y="714" text-anchor="middle">M3</text>
+  </g>
+  <g>
+    <rect x="56" y="736" width="306" height="40" rx="10" fill="#fff7ed"/>
+    <rect x="374" y="746" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="368" cy="756" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="412" y="760">#8</text>
+    <text class="pinname hl" x="356" y="760" text-anchor="end">GPIO14</text>
+    <rect x="60" y="743" width="96" height="26" rx="13" fill="#f97316"/>
+    <text class="tag" x="108" y="760" text-anchor="middle">M4</text>
+  </g>
+  <g>
+    <rect x="374" y="792" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="368" cy="802" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="412" y="806">#7</text>
+    <text class="pinname" x="356" y="806" text-anchor="end">GPIO12</text>
+  </g>
+  <g>
+    <rect x="56" y="828" width="306" height="40" rx="10" fill="#f1f5f9"/>
+    <rect x="374" y="838" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="368" cy="848" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="412" y="852">#6</text>
+    <text class="pinname hl" x="356" y="852" text-anchor="end">GND</text>
+    <rect x="60" y="835" width="96" height="26" rx="13" fill="#111827"/>
+    <text class="tag" x="108" y="852" text-anchor="middle">GND</text>
+  </g>
+  <g>
+    <rect x="374" y="884" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="368" cy="894" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="412" y="898">#5</text>
+    <text class="pinname" x="356" y="898" text-anchor="end">GPIO13</text>
+  </g>
+  <g>
+    <rect x="56" y="920" width="306" height="40" rx="10" fill="#f1f5f9"/>
+    <rect x="374" y="930" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="368" cy="940" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="412" y="944">#4</text>
+    <text class="pinname hl" x="356" y="944" text-anchor="end">GPIO9<tspan class="hint warn" dx="4">FLASH</tspan></text>
+  </g>
+  <g>
+    <rect x="56" y="966" width="306" height="40" rx="10" fill="#f1f5f9"/>
+    <rect x="374" y="976" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="368" cy="986" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="412" y="990">#3</text>
+    <text class="pinname hl" x="356" y="990" text-anchor="end">GPIO10<tspan class="hint warn" dx="4">FLASH</tspan></text>
+  </g>
+  <g>
+    <rect x="56" y="1012" width="306" height="40" rx="10" fill="#f1f5f9"/>
+    <rect x="374" y="1022" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="368" cy="1032" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="412" y="1036">#2</text>
+    <text class="pinname hl" x="356" y="1036" text-anchor="end">GPIO11<tspan class="hint warn" dx="4">FLASH</tspan></text>
+  </g>
+  <g>
+    <rect x="374" y="1068" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="368" cy="1078" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="412" y="1082">#1</text>
+    <text class="pinname" x="356" y="1082" text-anchor="end">5V</text>
+  </g>
+
+  <!-- ================= 右排 ================= -->
+  <g>
+    <rect x="838" y="230" width="302" height="40" rx="10" fill="#f1f5f9"/>
+    <rect x="800" y="240" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="832" cy="250" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="790" y="254" text-anchor="end">#19</text>
+    <text class="pinname hl" x="840" y="254">GND</text>
+    <rect x="1044" y="237" width="96" height="26" rx="13" fill="#111827"/>
+    <text class="tag" x="1092" y="254" text-anchor="middle">GND</text>
+  </g>
+  <g>
+    <rect x="800" y="286" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="832" cy="296" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="790" y="300" text-anchor="end">#18</text>
+    <text class="pinname" x="840" y="300">GPIO23</text>
+  </g>
+  <g>
+    <rect x="838" y="322" width="302" height="40" rx="10" fill="#f0fdf4"/>
+    <rect x="800" y="332" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="832" cy="342" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="790" y="346" text-anchor="end">#17</text>
+    <text class="pinname hl" x="840" y="346">GPIO22</text>
+    <rect x="1044" y="329" width="96" height="26" rx="13" fill="#16a34a"/>
+    <text class="tag" x="1092" y="346" text-anchor="middle">SCL</text>
+  </g>
+  <g>
+    <rect x="800" y="378" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="832" cy="388" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="790" y="392" text-anchor="end">#16</text>
+    <text class="pinname" x="840" y="392">GPIO1<tspan class="hint" dx="4">TX0</tspan></text>
+  </g>
+  <g>
+    <rect x="800" y="424" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="832" cy="434" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="790" y="438" text-anchor="end">#15</text>
+    <text class="pinname" x="840" y="438">GPIO3<tspan class="hint" dx="4">RX0</tspan></text>
+  </g>
+  <g>
+    <rect x="838" y="460" width="302" height="40" rx="10" fill="#eff6ff"/>
+    <rect x="800" y="470" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="832" cy="480" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="790" y="484" text-anchor="end">#14</text>
+    <text class="pinname hl" x="840" y="484">GPIO21</text>
+    <rect x="1044" y="467" width="96" height="26" rx="13" fill="#2563eb"/>
+    <text class="tag" x="1092" y="484" text-anchor="middle">SDA</text>
+  </g>
+  <g>
+    <rect x="838" y="506" width="302" height="40" rx="10" fill="#f1f5f9"/>
+    <rect x="800" y="516" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="832" cy="526" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="790" y="530" text-anchor="end">#13</text>
+    <text class="pinname hl" x="840" y="530">GND</text>
+    <rect x="1044" y="513" width="96" height="26" rx="13" fill="#111827"/>
+    <text class="tag" x="1092" y="530" text-anchor="middle">GND</text>
+  </g>
+  <g>
+    <rect x="800" y="562" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="832" cy="572" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="790" y="576" text-anchor="end">#12</text>
+    <text class="pinname" x="840" y="576">GPIO19</text>
+  </g>
+  <g>
+    <rect x="800" y="608" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="832" cy="618" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="790" y="622" text-anchor="end">#11</text>
+    <text class="pinname" x="840" y="622">GPIO18</text>
+  </g>
+  <g>
+    <rect x="800" y="654" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="832" cy="664" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="790" y="668" text-anchor="end">#10</text>
+    <text class="pinname" x="840" y="668">GPIO5</text>
+  </g>
+  <g>
+    <rect x="800" y="700" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="832" cy="710" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="790" y="714" text-anchor="end">#9</text>
+    <text class="pinname" x="840" y="714">GPIO17</text>
+  </g>
+  <g>
+    <rect x="800" y="746" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="832" cy="756" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="790" y="760" text-anchor="end">#8</text>
+    <text class="pinname" x="840" y="760">GPIO16</text>
+  </g>
+  <g>
+    <rect x="800" y="792" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="832" cy="802" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="790" y="806" text-anchor="end">#7</text>
+    <text class="pinname" x="840" y="806">GPIO4</text>
+  </g>
+  <g>
+    <rect x="800" y="838" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="832" cy="848" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="790" y="852" text-anchor="end">#6</text>
+    <text class="pinname" x="840" y="852">GPIO0<tspan class="hint" dx="4">BOOT</tspan></text>
+  </g>
+  <g>
+    <rect x="838" y="874" width="302" height="40" rx="10" fill="#fffbeb"/>
+    <rect x="800" y="884" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="832" cy="894" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="790" y="898" text-anchor="end">#5</text>
+    <text class="pinname hl" x="840" y="898">GPIO2</text>
+    <rect x="1044" y="881" width="96" height="26" rx="13" fill="#d97706"/>
+    <text class="tag" x="1092" y="898" text-anchor="middle">LED</text>
+  </g>
+  <g>
+    <rect x="800" y="930" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="832" cy="940" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="790" y="944" text-anchor="end">#4</text>
+    <text class="pinname" x="840" y="944">GPIO15</text>
+  </g>
+  <g>
+    <rect x="838" y="966" width="302" height="40" rx="10" fill="#f1f5f9"/>
+    <rect x="800" y="976" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="832" cy="986" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="790" y="990" text-anchor="end">#3</text>
+    <text class="pinname hl" x="840" y="990">GPIO8<tspan class="hint warn" dx="4">FLASH</tspan></text>
+  </g>
+  <g>
+    <rect x="838" y="1012" width="302" height="40" rx="10" fill="#f1f5f9"/>
+    <rect x="800" y="1022" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="832" cy="1032" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="790" y="1036" text-anchor="end">#2</text>
+    <text class="pinname hl" x="840" y="1036">GPIO7<tspan class="hint warn" dx="4">FLASH</tspan></text>
+  </g>
+  <g>
+    <rect x="838" y="1058" width="302" height="40" rx="10" fill="#f1f5f9"/>
+    <rect x="800" y="1068" width="26" height="20" rx="3" fill="#facc15" stroke="#a16207"/>
+    <circle cx="832" cy="1078" r="5" fill="#facc15" stroke="#a16207"/>
+    <text class="num" x="790" y="1082" text-anchor="end">#1</text>
+    <text class="pinname hl" x="840" y="1082">GPIO6<tspan class="hint warn" dx="4">FLASH</tspan></text>
+  </g>
+
+  <!-- ================= 馬達編號 ================= -->
+  <rect x="60" y="1180" width="340" height="250" rx="14" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="80" y="1210" font-size="14" font-weight="700" fill="#0f172a">馬達編號（由上往下看）</text>
+  <text x="380" y="1210" text-anchor="end" font-size="10.5" fill="#94a3b8">↑ 前進方向</text>
+  <rect x="100" y="1228" width="110" height="64" rx="10" fill="#fff7ed" stroke="#fbbf24"/>
+  <text x="155" y="1252" text-anchor="middle" font-size="18" font-weight="700" fill="#c2410c">M1</text>
+  <text x="155" y="1269" text-anchor="middle" font-size="11" fill="#92400e">前左</text>
+  <text x="155" y="1284" text-anchor="middle" font-size="10.5" fill="#b45309">GPIO25</text>
+  <rect x="222" y="1228" width="110" height="64" rx="10" fill="#fff7ed" stroke="#fbbf24"/>
+  <text x="277" y="1252" text-anchor="middle" font-size="18" font-weight="700" fill="#c2410c">M2</text>
+  <text x="277" y="1269" text-anchor="middle" font-size="11" fill="#92400e">前右</text>
+  <text x="277" y="1284" text-anchor="middle" font-size="10.5" fill="#b45309">GPIO26</text>
+  <rect x="100" y="1306" width="110" height="64" rx="10" fill="#fff7ed" stroke="#fbbf24"/>
+  <text x="155" y="1330" text-anchor="middle" font-size="18" font-weight="700" fill="#c2410c">M3</text>
+  <text x="155" y="1347" text-anchor="middle" font-size="11" fill="#92400e">後左</text>
+  <text x="155" y="1362" text-anchor="middle" font-size="10.5" fill="#b45309">GPIO27</text>
+  <rect x="222" y="1306" width="110" height="64" rx="10" fill="#fff7ed" stroke="#fbbf24"/>
+  <text x="277" y="1330" text-anchor="middle" font-size="18" font-weight="700" fill="#c2410c">M4</text>
+  <text x="277" y="1347" text-anchor="middle" font-size="11" fill="#92400e">後右</text>
+  <text x="277" y="1362" text-anchor="middle" font-size="10.5" fill="#b45309">GPIO14</text>
+  <text x="80" y="1416" font-size="10.5" fill="#475569">訊號線依序接左排由上往下第 9～12 腳</text>
+
+  <!-- ================= 圖例 ================= -->
+  <rect x="420" y="1180" width="370" height="250" rx="14" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="440" y="1210" font-size="14" font-weight="700" fill="#0f172a">圖例</text>
+  <rect x="440" y="1224" width="78" height="20" rx="10" fill="#f97316"/>
+  <text x="479" y="1238" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">M1～M4</text>
+  <text x="530" y="1238" font-size="11" fill="#475569">SG90 PWM　GPIO25 / 26 / 27 / 14</text>
+  <rect x="440" y="1254" width="78" height="20" rx="10" fill="#2563eb"/>
+  <text x="479" y="1268" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">SDA</text>
+  <text x="530" y="1268" font-size="11" fill="#475569">OLED 資料　GPIO21（右排 #14）</text>
+  <rect x="440" y="1284" width="78" height="20" rx="10" fill="#16a34a"/>
+  <text x="479" y="1298" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">SCL</text>
+  <text x="530" y="1298" font-size="11" fill="#475569">OLED 時鐘　GPIO22（右排 #17）</text>
+  <rect x="440" y="1314" width="78" height="20" rx="10" fill="#7c3aed"/>
+  <text x="479" y="1328" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">OLED VCC</text>
+  <text x="530" y="1328" font-size="11" fill="#475569">3V3（左排 #19，勿接 5V）</text>
+  <rect x="440" y="1344" width="78" height="20" rx="10" fill="#111827"/>
+  <text x="479" y="1358" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">GND</text>
+  <text x="530" y="1358" font-size="11" fill="#475569">左排 #6 或右排 #19 / #13</text>
+  <rect x="440" y="1374" width="78" height="20" rx="10" fill="#d97706"/>
+  <text x="479" y="1388" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">LED</text>
+  <text x="530" y="1388" font-size="11" fill="#475569">板載狀態燈　GPIO2（右排 #5）</text>
+  <text x="440" y="1414" font-size="10.5" fill="#94a3b8">灰底＝FLASH／strapping 腳，本專案不使用</text>
+
+  <!-- ================= 重點提醒 ================= -->
+  <rect x="810" y="1180" width="330" height="250" rx="14" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="830" y="1210" font-size="14" font-weight="700" fill="#0f172a">重點提醒</text>
+  <text x="830" y="1238" font-size="11" fill="#475569">• 排針編號由下往上 1～19，與接腳圖-1 一致</text>
+  <text x="830" y="1266" font-size="11" fill="#475569">• 左排由上往下第 9～12 腳＝GPIO25/26/27/14</text>
+  <text x="830" y="1294" font-size="11" fill="#475569">• OLED 電源接 3V3，接 5V 會燒毀模組</text>
+  <text x="830" y="1322" font-size="11" fill="#475569">• 四顆 SG90 請用外部 5V / 2A 並共地</text>
+  <text x="830" y="1350" font-size="11" fill="#475569">• GPIO6～11 接 FLASH，勿接任何裝置</text>
+  <text x="830" y="1378" font-size="11" fill="#475569">• 腳位可於 config.h 統一修改</text>
+
+  <text x="60" y="1464" font-size="11" fill="#94a3b8">DogBot v1.2.0 · 詳細腳位表請見 docs/PINMAP.md</text>
+  <text x="1140" y="1464" text-anchor="end" font-size="11" fill="#94a3b8">ESP32 NodeMCU-32S Toy Dog</text>
+</svg>

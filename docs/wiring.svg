@@ -67,7 +67,7 @@
   <!-- ================= ESP32 ================= -->
   <rect x="80" y="290" width="320" height="460" rx="18" fill="#ffffff" stroke="#334155" stroke-width="2.5"/>
   <text x="240" y="344" text-anchor="middle" font-size="21" font-weight="700" fill="#0f172a">ESP32 NodeMCU-32S</text>
-  <text x="240" y="366" text-anchor="middle" font-size="12" fill="#64748b">ESP32-WROOM-32 · 30-pin · 3.3V 邏輯</text>
+  <text x="240" y="366" text-anchor="middle" font-size="12" fill="#64748b">ESP32-WROOM-32 · 38-pin · 3.3V 邏輯</text>
 
   <!-- 頂部腳位標籤 -->
   <g font-size="10" text-anchor="middle" fill="#475569">
@@ -241,7 +241,7 @@
     <text x="922" y="198">• 馬達電源 GND 必須與 ESP32 GND 共地</text>
     <text x="922" y="220">• 5V 電源建議並聯 470～1000 µF 電解電容</text>
     <text x="922" y="242">• OLED VCC 接 3.3V，不可接 5V</text>
-    <text x="922" y="264">• PWM（左排）：M1=GPIO25、M2=26、M3=27、M4=14</text>
+    <text x="922" y="264">• PWM（左排第 9～12 腳）：M1=25、M2=26、M3=27、M4=14</text>
     <text x="922" y="286">• 訊號線（橘）、V+（紅）、GND（黑／棕）</text>
     <text x="922" y="308">• 接腳可於 config.h 修改</text>
   </g>

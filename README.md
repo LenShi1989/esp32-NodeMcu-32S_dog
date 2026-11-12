@@ -3,7 +3,7 @@
 > 目前版本：**v1.2.0**（2026-11-12）
 >
 > 本專案由 [`esp32-D1-mini_dog`](../esp32-D1-mini_dog) 移植，開發板改為
-> **ESP32 NodeMCU-32S（ESP32-WROOM-32 / 30-pin）**，並依 NodeMCU-32S
+> **ESP32 NodeMCU-32S（ESP32-WROOM-32 / 38-pin，兩側各 19 腳）**，並依 NodeMCU-32S
 > 腳位重新定義、加入編譯期腳位檢查。
 
 以 **ESP32 NodeMCU-32S** 製作的四足玩具狗，使用 4 顆 **SG90** 伺服馬達驅動四條腿，
@@ -53,11 +53,12 @@ esp32_nodemcu_32s_dog/            # Arduino sketch
    └─ app.js
 
 docs/
-├─ NodeMcu-32S_接腳圖-1.png       # 36 GPIO DevKit 腳位圖
-├─ NodeMcu-32S_接腳圖-2.png       # 30-pin NodeMCU-32S 腳位圖（本專案採用）
+├─ NodeMcu-32S_接腳圖-1.png       # 38-pin NodeMCU-32S 腳位圖（本專案採用）
+├─ NodeMcu-32S_接腳圖-2.png       # 同一塊 38-pin 板的 GPIO 可用性標示
 ├─ NodeMcu-32S_接腳說明.pdf
 ├─ PINMAP.md                      # 本專案腳位對照與保留腳位說明
-└─ wiring.svg                     # 接線圖
+├─ wiring.svg                     # 接線圖
+└─ pinmap.svg                     # 腳位標示圖（標出本專案使用的腳位與馬達編號）
 
 tools/                            # 輔助工具
 ├─ build_spiffs.ps1               # 建立 SPIFFS 映像（PowerShell）
@@ -73,7 +74,7 @@ tools/                            # 輔助工具
 
 | 零件 | 數量 | 備註 |
 | --- | --- | --- |
-| ESP32 NodeMCU-32S | 1 | ESP32-WROOM-32，30-pin 或 38-pin 皆可（腳位編號相同） |
+| ESP32 NodeMCU-32S | 1 | ESP32-WROOM-32，38-pin（本專案依接腳圖-1；30-pin 版 GPIO 編號相同） |
 | SG90 伺服馬達 | 4 | 分別對應四條腿 |
 | SSD1306 OLED | 1 | 128×64，I2C，位址 0x3C（或 0x3D） |
 | 外部 5V 電源 | 1 | **建議 5V / 2A 以上**，不可只靠 USB 供電 |
@@ -85,20 +86,24 @@ tools/                            # 輔助工具
 
 | 訊號 | GPIO | NodeMCU-32S 位置 | 說明 |
 | --- | --- | --- | --- |
-| SG90 M1 訊號（前左） | **25** | 左排第 8 腳 | 橘色 / 訊號線 |
-| SG90 M2 訊號（前右） | **26** | 左排第 9 腳 | 橘色 / 訊號線 |
-| SG90 M3 訊號（後左） | **27** | 左排第 10 腳 | 橘色 / 訊號線 |
-| SG90 M4 訊號（後右） | **14** | 左排第 11 腳 | 橘色 / 訊號線 |
-| OLED SDA | **21** | 右排第 5 腳（SDA） | I2C 資料 |
-| OLED SCL | **22** | 右排第 2 腳（SCL） | I2C 時鐘 |
-| OLED VCC | 3V3 | 右排第 15 腳 | **不要接 5V** |
-| OLED GND | GND | 左排第 14 腳或右排第 14 腳 | |
+| SG90 M1 訊號（前左） | **25** | 左排由上往下第 9 腳（#11） | 橘色 / 訊號線 |
+| SG90 M2 訊號（前右） | **26** | 左排由上往下第 10 腳（#10） | 橘色 / 訊號線 |
+| SG90 M3 訊號（後左） | **27** | 左排由上往下第 11 腳（#9） | 橘色 / 訊號線 |
+| SG90 M4 訊號（後右） | **14** | 左排由上往下第 12 腳（#8） | 橘色 / 訊號線 |
+| OLED SDA | **21** | 右排由上往下第 6 腳（#14，SDA） | I2C 資料 |
+| OLED SCL | **22** | 右排由上往下第 3 腳（#17，SCL） | I2C 時鐘 |
+| OLED VCC | 3V3 | 左排由上往下第 1 腳（#19） | **不要接 5V** |
+| OLED GND | GND | 左排由上往下第 14 腳（#6）或右排第 1／7 腳（#19／#13） | |
 | 伺服馬達 V+ | 外部 5V | — | 4 顆馬達並聯 |
 | 伺服馬達 GND | 外部 5V GND | — | **必須與 ESP32 GND 共地** |
-| 板載 LED | 2 | 右排第 12 腳 | 藍色 LED，低電位點亮 |
+| 板載 LED | 2 | 右排由上往下第 15 腳（#5） | 藍色 LED，低電位點亮 |
 
-> 腳位計數方式：左排由 **EN = 第 1 腳**往下數（EN、36、39、34、35、32、33、**25、26、27、14**、12、13、GND、VIN）；
-> 右排由 **GPIO23 = 第 1 腳**往下數（23、**22**、TX0、RX0、**21**、19、18、5、17、16、4、**2**、15、GND、3V3）。
+> 腳位計數依 [`NodeMcu-32S_接腳圖-1.png`](docs/NodeMcu-32S_接腳圖-1.png)（38-pin、兩側各 19 腳，排針編號由下往上 1～19）：
+> 左排由上往下為 3V3、EN、36、39、34、35、32、33、**25、26、27、14**、12、GND、13、9、10、11、5V；
+> 右排由上往下為 GND、23、**22**、TX0、RX0、**21**、GND、19、18、5、17、16、4、0、**2**、15、8、7、6。
+> 表中括號的 `#n` 就是圖上的排針編號。
+
+![DogBot 腳位標示圖](docs/pinmap.svg)
 
 > ⚠️ SG90 啟動瞬間電流可達 1A 以上。四顆同時動作請務必使用獨立 5V 電源，
 > 並將電源 GND 與 ESP32 GND 相接，否則可能造成 ESP32 重啟或網頁斷線。
@@ -107,7 +112,7 @@ tools/                            # 輔助工具
 
 | 腳位 | 狀態 | 本專案用途 |
 | --- | --- | --- |
-| GPIO25 / 26 / 27 / 14 | PWM 輸出，非 strapping | 四顆 SG90（左排相鄰，方便接線） |
+| GPIO25 / 26 / 27 / 14 | PWM 輸出，非 strapping | 四顆 SG90（左排由上往下第 9～12 腳相鄰，方便接線） |
 | GPIO21 / 22 | I2C（SDA / SCL） | SSD1306 OLED |
 | GPIO2 | 板載藍色 LED（低電位點亮） | 狀態燈 |
 | GPIO34 / 35 / 36 / 39 | **僅能輸入** | 不可接伺服馬達訊號 |
@@ -345,10 +350,10 @@ curl -X POST http://192.168.4.1/api/servo -d "ch=1&angle=135"
 編輯 `config.h`：
 
 ```cpp
-#define SERVO_PIN_FL 25   // 左排第 8 腳
-#define SERVO_PIN_FR 26   // 左排第 9 腳
-#define SERVO_PIN_RL 27   // 左排第 10 腳
-#define SERVO_PIN_RR 14   // 左排第 11 腳
+#define SERVO_PIN_FL 25   // 左排由上往下第 9 腳（#11）
+#define SERVO_PIN_FR 26   // 左排由上往下第 10 腳（#10）
+#define SERVO_PIN_RL 27   // 左排由上往下第 11 腳（#9）
+#define SERVO_PIN_RR 14   // 左排由上往下第 12 腳（#8）
 #define SERVO_MIN_US 500
 #define SERVO_MAX_US 2400
 ```
@@ -404,7 +409,7 @@ const float POSE_LIE[4]   = {136, 136, 44, 44};
 | --- | --- | --- |
 | Sketch 資料夾 | `esp32_d1_mini_dog` | `esp32_nodemcu_32s_dog` |
 | 開發板設定 | LOLIN D32 / ESP32 Dev Module | **NodeMCU-32S** / ESP32 Dev Module |
-| 伺服馬達腳位 | GPIO25 / 26 / 27 / 14 | **相同**（NodeMCU-32S 左排第 8～11 腳） |
+| 伺服馬達腳位 | GPIO25 / 26 / 27 / 14 | **相同**（NodeMCU-32S 左排由上往下第 9～12 腳） |
 | OLED I2C | GPIO21 / 22 | **相同**（NodeMCU-32S 預設 SDA / SCL） |
 | 腳位檢查 | 無 | **編譯期 `static_assert` / `#error`** |
 | 狀態 API | `board` 欄位無 | 新增 `board`，網頁顯示開發板名稱 |
@@ -426,7 +431,7 @@ A：外掛路徑必須是 `Arduino\tools\ESP32FS\tool\esp32fs.jar`，放好後�
 
 **Q：OLED 沒畫面**
 A：確認 VCC 接 3.3V、SDA = GPIO21、SCL = GPIO22、GND 共地；
-NodeMCU-32S 的 I2C 腳位在右排（22 在上、21 在下），必要時用 I2C 掃描確認位址。
+NodeMCU-32S 的 I2C 腳位在右排（由上往下第 3 腳 = GPIO22、第 6 腳 = GPIO21），必要時用 I2C 掃描確認位址。
 
 **Q：編譯出現「伺服馬達不可使用 GPIO34~39」**
 A：`config.h` 的腳位檢查偵測到僅輸入腳位。請改用 GPIO25 / 26 / 27 / 14
@@ -434,7 +439,7 @@ A：`config.h` 的腳位檢查偵測到僅輸入腳位。請改用 GPIO25 / 26 /
 
 **Q：伺服馬達抖動或 ESP32 一直重啟**
 A：幾乎都是供電問題。請用獨立 5V/2A 電源、共地，並加 470µF 以上電容；
-USB 供電不足以驅動四顆 SG90。NodeMCU-32S 的 VIN 不可作為馬達電源。
+USB 供電不足以驅動四顆 SG90。NodeMCU-32S 左排最下方的 5V（VIN）腳位不可作為馬達電源。
 
 **Q：WiFi 掃描不到網路**
 A：AP 模式下掃描會暫停 AP 廣播數秒，請稍候再試；亦可直接手動輸入 SSID。

@@ -4,7 +4,7 @@
  * Arduino IDE 1.8.19 + ESP32 core 2.x / 3.x
  *
  * 版本紀錄：
- *   v1.2.0  移植至 ESP32 NodeMCU-32S（ESP32-WROOM-32 / 30-pin）
+ *   v1.2.0  移植至 ESP32 NodeMCU-32S（ESP32-WROOM-32 / 38-pin，兩側各 19 腳）
  *           依 NodeMCU-32S 腳位重新定義，新增編譯期腳位檢查
  *           狀態 API 增加 board 欄位，OLED/網頁顯示開發板名稱
  *   v1.1.0  WiFi STA + AP 共存（AP 熱點常駐）

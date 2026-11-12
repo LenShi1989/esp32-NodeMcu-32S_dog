@@ -1,17 +1,20 @@
 #pragma once
 
 // ===========================================================================
-// 開發板：ESP32 NodeMCU-32S（ESP32-WROOM-32 / 30-pin）
+// 開發板：ESP32 NodeMCU-32S（ESP32-WROOM-32 / 38-pin，兩側各 19 腳）
 // ===========================================================================
 // 腳位參考：docs/NodeMcu-32S_接腳圖-1.png、docs/NodeMcu-32S_接腳圖-2.png
+// 排針編號由下往上 1～19；以下為「由上往下」順序
 //
-// 左排（EN 在上、VIN 在下）：
-//   EN, GPIO36(VP), GPIO39(VN), GPIO34, GPIO35, GPIO32, GPIO33,
-//   GPIO25, GPIO26, GPIO27, GPIO14, GPIO12, GPIO13, GND, VIN
+// 左排（3V3 在上、5V 在下）：
+//   3V3, EN, GPIO36(SVP), GPIO39(SVN), GPIO34, GPIO35, GPIO32, GPIO33,
+//   GPIO25, GPIO26, GPIO27, GPIO14, GPIO12, GND, GPIO13,
+//   GPIO9(FLASH D2), GPIO10(FLASH D3), GPIO11(FLASH CMD), 5V
 //
-// 右排（GPIO23 在上、3V3 在下）：
-//   GPIO23, GPIO22(SCL), GPIO1(TX0), GPIO3(RX0), GPIO21(SDA), GPIO19,
-//   GPIO18, GPIO5, GPIO17(TX2), GPIO16(RX2), GPIO4, GPIO2, GPIO15, GND, 3V3
+// 右排（GND 在上、GPIO6 在下）：
+//   GND, GPIO23, GPIO22(SCL), GPIO1(TX0), GPIO3(RX0), GPIO21(SDA), GND,
+//   GPIO19, GPIO18, GPIO5, GPIO17, GPIO16, GPIO4, GPIO0(BOOT), GPIO2,
+//   GPIO15, GPIO8(FLASH D1), GPIO7(FLASH D0), GPIO6(FLASH SCK)
 //
 // 選用原則：
 //   * 四顆 SG90 使用 GPIO25 / 26 / 27 / 14：在左排彼此相鄰、皆可輸出 PWM，
@@ -27,7 +30,7 @@
 #define FW_VERSION "1.2.0"
 
 // ---------------- OLED SSD1306 (I2C) ----------------
-// NodeMCU-32S 右排：GPIO22 = SCL、GPIO21 = SDA
+// NodeMCU-32S 右排：GPIO22 = SCL（由上往下第 3 腳）、GPIO21 = SDA（由上往下第 6 腳）
 #define OLED_SDA    21
 #define OLED_SCL    22
 #define OLED_WIDTH  128
@@ -37,7 +40,7 @@
 
 // ---------------- SG90 伺服馬達 ----------------
 // 編號：0=前左(M1) 1=前右(M2) 2=後左(M3) 3=後右(M4)
-// NodeMCU-32S 左排由上往下第 8～11 腳：GPIO25、26、27、14
+// NodeMCU-32S 左排由上往下第 9～12 腳：GPIO25、26、27、14
 #define SERVO_PIN_FL 25
 #define SERVO_PIN_FR 26
 #define SERVO_PIN_RL 27
@@ -47,7 +50,7 @@
 #define SERVO_CENTER 90
 
 // ---------------- 板載狀態燈 ----------------
-// NodeMCU-32S 的藍色 LED 接在 GPIO2，低電位點亮
+// NodeMCU-32S 右排由上往下第 15 腳的 GPIO2 接藍色 LED，低電位點亮
 #define STATUS_LED 2
 
 // ---------------- WiFi ----------------
