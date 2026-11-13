@@ -1,9 +1,11 @@
 /*
  * DogBot - ESP32 NodeMCU-32S 玩具狗
- * 版本：v1.3.1（2026-11-13）
+ * 版本：v1.4.0（2026-11-13）
  * Arduino IDE 1.8.19 + ESP32 core 2.x / 3.x
  *
  * 版本紀錄：
+ *   v1.4.0  新增「撒尿」與「自定義動作」指令
+ *           網頁新增自定義角度編輯器與維持時間設定
  *   v1.3.1  SPIFFS 映像大小自動偵測（修正找不到 /index.html）、
  *           OTA 上傳前檢查映像大小、狀態 API 增加分割區與前端檔案狀態
  *   v1.3.0  重寫四足步態：側序步態（一次只抬一隻腳）、非對稱支撐／擺動、
@@ -344,6 +346,8 @@ void loop() {
       case MODE_LIE:    face.setMood(MOOD_SLEEP, 5000); break;
       case MODE_WAVE:   face.setMood(MOOD_EXCITED, 3000); break;
       case MODE_WAG:    face.setMood(MOOD_LOVE, 4000); break;
+      case MODE_PEE:    face.setMood(MOOD_HAPPY, 3000); break;
+      case MODE_CUSTOM: face.setMood(MOOD_HAPPY, 2000); break;
       case MODE_MANUAL: face.setMood(MOOD_DIZZY, 0); break;
       default:          face.setMood(MOOD_HAPPY, 2000); break;
     }
@@ -560,6 +564,46 @@ void handleMove() {
 
 void handleAction() {
   String action = server.hasArg("action") ? server.arg("action") : "";
+  action.trim();
+  action.toLowerCase();
+
+  // 自定義動作：action=custom&a0=..&a1=..&a2=..&a3=..&hold=毫秒
+  if (action == "custom") {
+    int angles[4];
+    for (int i = 0; i < 4; i++) {
+      String key = "a";
+      key += (char)('0' + i);
+      if (!server.hasArg(key)) {
+        server.send(400, "application/json; charset=utf-8",
+                    "{\"ok\":false,\"error\":\"自定義動作需要 a0~a3 四顆馬達角度\"}");
+        return;
+      }
+      angles[i] = server.arg(key).toInt();
+    }
+
+    long hold = server.hasArg("hold") ? server.arg("hold").toInt() : CUSTOM_HOLD_MS;
+    if (hold < 0) hold = 0;
+    if (hold > 60000) hold = 60000;
+
+    if (!dog.setCustomPose(angles, (uint32_t)hold)) {
+      server.send(400, "application/json; charset=utf-8",
+                  "{\"ok\":false,\"error\":\"角度必須介於 0~180 度\"}");
+      return;
+    }
+
+    String j = F("{\"ok\":true,\"mode\":\"");
+    j += dog.modeName();
+    j += F("\",\"hold\":");
+    j += String(hold);
+    j += F(",\"angles\":[");
+    for (int i = 0; i < 4; i++) {
+      if (i) j += ',';
+      j += String(angles[i]);
+    }
+    j += F("]}");
+    server.send(200, "application/json; charset=utf-8", j);
+    return;
+  }
 
   if (!dog.action(action)) {
     server.send(400, "application/json; charset=utf-8",

@@ -211,6 +211,12 @@
             <button class="action-btn" data-action="wag" type="button">
               <span class="action-ico">💖</span><span>撒嬌</span>
             </button>
+            <button class="action-btn" data-action="pee" type="button">
+              <span class="action-ico">💦</span><span>撒尿</span>
+            </button>
+            <button class="action-btn" data-action="custom" type="button">
+              <span class="action-ico">🎛️</span><span>自定義</span>
+            </button>
           </div>
 
           <div class="card-head mt">
@@ -219,9 +225,32 @@
           </div>
           <dl class="kv compact">
             <div><dt>動作模式</dt><dd id="motionModeText">待機</dd></div>
-            <div><dt>控制來源</dt><dd>虛擬搖桿 / 特殊指令</dd></div>
+            <div><dt>控制來源</dt><dd>虛擬搖桿 / 特殊指令 / 自定義</dd></div>
           </dl>
-          <p class="hint">特殊指令執行後，坐下與趴下會維持姿勢；舉手與撒嬌會在數秒後自動回到待機。</p>
+          <p class="hint">坐下與趴下會維持姿勢；舉手、撒嬌與撒尿會在數秒後自動回到待機。自定義動作可設定維持時間或持續保持。</p>
+
+          <div class="card-head mt">
+            <h3>自定義動作</h3>
+            <button class="ghost sm" id="customFromCurrent" type="button">帶入目前角度</button>
+          </div>
+          <div class="custom-grid">
+            <label>前左 <input type="number" id="cust0" min="0" max="180" step="1" value="90"></label>
+            <label>前右 <input type="number" id="cust1" min="0" max="180" step="1" value="90"></label>
+            <label>後左 <input type="number" id="cust2" min="0" max="180" step="1" value="90"></label>
+            <label>後右 <input type="number" id="cust3" min="0" max="180" step="1" value="90"></label>
+          </div>
+          <div class="custom-actions">
+            <label class="custom-hold">維持
+              <select id="custHold">
+                <option value="2000">2 秒</option>
+                <option value="3000" selected>3 秒</option>
+                <option value="5000">5 秒</option>
+                <option value="0">持續</option>
+              </select>
+            </label>
+            <button class="primary sm" id="customRun" type="button">執行自定義動作</button>
+          </div>
+          <p class="hint">輸入四顆馬達角度（0°～180°）後執行；選擇「持續」會保持姿勢直到下一個指令。</p>
         </article>
       </div>
     </section>

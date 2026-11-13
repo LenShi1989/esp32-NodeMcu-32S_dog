@@ -96,8 +96,9 @@ void DogServo::update() {
   float dt = elapsed / 1000.0f;
   if (dt > 0.12f) dt = 0.12f;
 
-  // 舉手／撒嬌時間到後自動回待機
-  if ((_mode == MODE_WAVE || _mode == MODE_WAG) &&
+  // 定時動作時間到後自動回待機（自定義動作若 holdMs=0 則持續保持）
+  if ((_mode == MODE_WAVE || _mode == MODE_WAG || _mode == MODE_PEE ||
+       _mode == MODE_CUSTOM) &&
       _holdUntil && (int32_t)(now - _holdUntil) >= 0) {
     _mode = MODE_STAND;
     _holdUntil = 0;
@@ -154,6 +155,21 @@ void DogServo::update() {
       _target[3] = SERVO_CENTER + 14.0f * w;
       break;
     }
+
+    case MODE_PEE: {
+      // 左後腿（M3，index 2）往前擺動；其餘三腳站穩。
+      // 0.5 - 0.5*cos 讓角度從 90° 平滑往前推，再緩慢來回擺動。
+      float swing = 0.5f - 0.5f * cosf(now * 0.0045f);
+      _target[0] = SERVO_CENTER;
+      _target[1] = SERVO_CENTER;
+      _target[3] = SERVO_CENTER;
+      _target[2] = SERVO_CENTER + PEE_RL_SWING_DEG * swing;
+      break;
+    }
+
+    case MODE_CUSTOM:
+      for (uint8_t i = 0; i < 4; i++) _target[i] = _custom[i];
+      break;
 
     case MODE_SIT:
       for (uint8_t i = 0; i < 4; i++) _target[i] = POSE_SIT[i];
@@ -236,9 +252,29 @@ bool DogServo::action(const String &name) {
   } else if (a == "wag" || a == "cute") {
     _mode = MODE_WAG;
     _holdUntil = millis() + 4000;
+  } else if (a == "pee" || a == "piss") {
+    _mode = MODE_PEE;
+    _holdUntil = millis() + PEE_HOLD_MS;
   } else {
     return false;
   }
+  return true;
+}
+
+bool DogServo::setCustomPose(const int angles[4], uint32_t holdMs) {
+  if (!angles) return false;
+
+  for (uint8_t i = 0; i < 4; i++) {
+    if (angles[i] < 0 || angles[i] > 180) return false;
+  }
+  for (uint8_t i = 0; i < 4; i++) {
+    _custom[i] = (float)angles[i];
+  }
+
+  _forward = 0.0f;
+  _turn = 0.0f;
+  _mode = MODE_CUSTOM;
+  _holdUntil = holdMs ? (millis() + holdMs) : 0;
   return true;
 }
 
@@ -286,6 +322,8 @@ const char *DogServo::modeName() const {
     case MODE_LIE:    return "lie";
     case MODE_WAVE:   return "wave";
     case MODE_WAG:    return "wag";
+    case MODE_PEE:    return "pee";
+    case MODE_CUSTOM: return "custom";
     case MODE_MANUAL: return "manual";
     default:          return "stand";
   }

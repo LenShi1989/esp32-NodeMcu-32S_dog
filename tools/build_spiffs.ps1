@@ -144,7 +144,7 @@ $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $scriptDir '..'))
 $sketchDir = Join-Path $repoRoot 'esp32_nodemcu_32s_dog'
 
 if (-not $DataDir) { $DataDir = Join-Path $sketchDir 'data' }
-if (-not $Out) { $Out = Join-Path $repoRoot 'esp32_nodemcu_32s_dog\build\spiffs.bin' }
+if (-not $Out) { $Out = Join-Path $repoRoot 'build\spiffs.bin' }
 
 $DataDir = [System.IO.Path]::GetFullPath($DataDir)
 $Out = [System.IO.Path]::GetFullPath($Out)

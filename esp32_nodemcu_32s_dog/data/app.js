@@ -8,7 +8,8 @@ const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
 const MODE_LABEL = {
   stand: '待機', walk: '行走中', sit: '坐下',
-  lie: '趴下', wave: '舉手', wag: '撒嬌', manual: '手動測試'
+  lie: '趴下', wave: '舉手', wag: '撒嬌',
+  pee: '撒尿', custom: '自定義', manual: '手動測試'
 };
 const MODE_CLASS = { walk: 'walk', manual: 'manual', lie: 'lie' };
 
@@ -453,15 +454,64 @@ $$('.action-btn').forEach((btn) => {
   btn.addEventListener('click', async () => {
     btn.classList.add('busy');
     try {
-      const r = await api('/api/action', { action: btn.dataset.action });
-      setMode(r.mode);
-      toast(btn.querySelector('span:last-child').textContent + ' · ' + (MODE_LABEL[r.mode] || '執行中'), 'success');
+      if (btn.dataset.action === 'custom') {
+        await runCustom();
+      } else {
+        const r = await api('/api/action', { action: btn.dataset.action });
+        setMode(r.mode);
+        toast(btn.querySelector('span:last-child').textContent + ' · ' + (MODE_LABEL[r.mode] || '執行中'), 'success');
+      }
     } catch (err) {
       toast(err.message, 'error');
     } finally {
       setTimeout(() => btn.classList.remove('busy'), 320);
     }
   });
+});
+
+/* ---------------- Custom action ---------------- */
+const CUSTOM_IDS = ['cust0', 'cust1', 'cust2', 'cust3'];
+
+function readCustomAngles() {
+  return CUSTOM_IDS.map((id) => {
+    const el = document.getElementById(id);
+    let v = parseInt(el.value, 10);
+    if (!Number.isFinite(v)) v = 90;
+    v = Math.max(0, Math.min(180, v));
+    el.value = v;
+    return v;
+  });
+}
+
+async function runCustom() {
+  const angles = readCustomAngles();
+  const hold = parseInt($('#custHold').value, 10) || 0;
+  const body = { action: 'custom', hold };
+  angles.forEach((v, i) => { body['a' + i] = v; });
+
+  const r = await api('/api/action', body);
+  setMode(r.mode);
+  toast(
+    '自定義動作 · ' + angles.join('° / ') + '°' +
+    (hold ? ' · ' + (hold / 1000) + ' 秒' : ' · 持續'),
+    'success'
+  );
+}
+
+$('#customRun').addEventListener('click', async () => {
+  try {
+    await runCustom();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+});
+
+$('#customFromCurrent').addEventListener('click', async () => {
+  const s = await refreshStatus(true);
+  if (!s) return;
+  const angles = (s.servo && s.servo.angles) || [90, 90, 90, 90];
+  CUSTOM_IDS.forEach((id, i) => { document.getElementById(id).value = angles[i]; });
+  toast('已帶入目前角度', 'success');
 });
 
 $('#releaseManual').addEventListener('click', async () => {

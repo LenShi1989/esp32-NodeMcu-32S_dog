@@ -12,6 +12,8 @@ enum DogMode : uint8_t {
   MODE_LIE,
   MODE_WAVE,
   MODE_WAG,
+  MODE_PEE,
+  MODE_CUSTOM,
   MODE_MANUAL
 };
 
@@ -27,8 +29,11 @@ class DogServo {
   // 行走：forward(-1 後退 ~ 1 前進)、turn(-1 左轉 ~ 1 右轉)
   void setWalk(float forward, float turn);
 
-  // 特殊指令：stand / sit / lie / wave / wag / stop
+  // 特殊指令：stand / sit / lie / wave / wag / pee / stop
   bool action(const String &name);
+
+  // 自定義動作：四顆馬達角度（0~180），holdMs=0 表示持續保持
+  bool setCustomPose(const int angles[4], uint32_t holdMs = CUSTOM_HOLD_MS);
 
   // 手動測試：channel 0~3、angle 0~180
   void setManual(uint8_t channel, int angle);
@@ -55,7 +60,8 @@ class DogServo {
   float   _turn = 0.0f;
   float   _phase = 0.0f;      // 步態相位 0.0 ~ 1.0
   float   _walkGain = 0.0f;   // 起步淡入，避免第一步瞬間拉扯
+  float   _custom[4] = {SERVO_CENTER, SERVO_CENTER, SERVO_CENTER, SERVO_CENTER};
 
   uint32_t _lastUpdate = 0;
-  uint32_t _holdUntil = 0;  // wave / wag 自動返回待機的時間
+  uint32_t _holdUntil = 0;  // 定時動作自動返回待機的時間
 };
