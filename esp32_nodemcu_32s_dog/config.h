@@ -91,7 +91,7 @@
 // ---------------- 特殊動作 ----------------
 // 撒尿：左後腿往前擺動的幅度（度）。90° 為待機，數值越大越往前；
 // 若實際擺動方向相反，改成負值即可。
-#define PEE_RL_SWING_DEG  32.0f
+#define PEE_RL_SWING_DEG  48.0f
 #define PEE_HOLD_MS       4000
 // 自定義動作預設維持時間（毫秒）；0 表示持續保持姿勢。
 #define CUSTOM_HOLD_MS    3000

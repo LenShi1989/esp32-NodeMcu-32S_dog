@@ -142,7 +142,7 @@ void DogServo::update() {
     }
 
     case MODE_WAVE: {
-      float w = sinf(now * 0.012f) * 22.0f;
+      float w = sinf(now * 0.012f) * 36.0f;
       _target[0] = SERVO_CENTER;
       _target[2] = SERVO_CENTER;
       _target[3] = SERVO_CENTER;
