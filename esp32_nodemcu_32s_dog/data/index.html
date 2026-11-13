@@ -196,7 +196,32 @@
           <p class="hint">拖曳搖桿或以鍵盤方向鍵控制；放開後自動停下。</p>
         </article>
 
-        <article class="card">
+        <article class="card dpad-card">
+          <div class="card-head">
+            <h3>方向控制</h3>
+            <span class="pill">長按移動</span>
+          </div>
+          <div class="dpad">
+            <button class="dpad-btn up" data-dir="forward" type="button">
+              <span class="dpad-ico">▲</span><span>前進</span>
+            </button>
+            <button class="dpad-btn left" data-dir="left" type="button">
+              <span class="dpad-ico">◀</span><span>左轉</span>
+            </button>
+            <button class="dpad-btn stop" data-dir="stop" type="button">
+              <span class="dpad-ico">■</span><span>停止</span>
+            </button>
+            <button class="dpad-btn right" data-dir="right" type="button">
+              <span class="dpad-ico">▶</span><span>右轉</span>
+            </button>
+            <button class="dpad-btn down" data-dir="back" type="button">
+              <span class="dpad-ico">▼</span><span>後退</span>
+            </button>
+          </div>
+          <p class="hint">按住方向鍵會持續移動，放開即停止；「停止」會立刻中斷動作。</p>
+        </article>
+
+        <article class="card actions-card">
           <div class="card-head"><h3>特殊指令</h3></div>
           <div class="action-grid">
             <button class="action-btn" data-action="sit" type="button">

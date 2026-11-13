@@ -454,12 +454,17 @@ button:active { transform: scale(0.98); }
 .motion-layout {
   display: grid;
   grid-template-columns: minmax(300px, 1.05fr) minmax(300px, 1fr);
+  grid-template-areas:
+    "joy actions"
+    "dpad actions";
   gap: 16px;
   align-items: start;
 }
 .motion-layout .card { margin-bottom: 0; }
 
-.joystick-card { display: flex; flex-direction: column; align-items: center; }
+.joystick-card { grid-area: joy; display: flex; flex-direction: column; align-items: center; }
+.dpad-card { grid-area: dpad; }
+.actions-card { grid-area: actions; }
 
 .joystick {
   --joy-size: min(300px, 68vw);
@@ -532,6 +537,54 @@ button:active { transform: scale(0.98); }
 }
 .joy-readout strong { font-size: 15px; }
 .joy-readout span { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* ---------------- Direction pad ---------------- */
+.dpad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-areas:
+    ". up ."
+    "left stop right"
+    ". down .";
+  gap: 10px;
+  max-width: 340px;
+  margin: 4px auto 16px;
+}
+
+.dpad-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 14px 6px 12px;
+  border-radius: 13px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.014));
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 600;
+  touch-action: none;
+  user-select: none;
+  transition: border-color 0.18s, background 0.18s, transform 0.1s;
+}
+.dpad-btn:hover { border-color: rgba(255, 200, 87, 0.4); background: rgba(255, 200, 87, 0.075); }
+.dpad-btn.active { transform: scale(0.96); border-color: rgba(255, 200, 87, 0.65); background: rgba(255, 200, 87, 0.16); }
+.dpad-ico { font-size: 17px; line-height: 1; opacity: 0.9; }
+
+.dpad-btn.up { grid-area: up; }
+.dpad-btn.down { grid-area: down; }
+.dpad-btn.left { grid-area: left; }
+.dpad-btn.right { grid-area: right; }
+
+.dpad-btn.stop {
+  grid-area: stop;
+  border-color: rgba(255, 107, 107, 0.35);
+  background: rgba(255, 107, 107, 0.12);
+  color: #ff9b9b;
+}
+.dpad-btn.stop:hover { background: rgba(255, 107, 107, 0.2); border-color: rgba(255, 107, 107, 0.5); }
+.dpad-btn.stop.active { background: rgba(255, 107, 107, 0.28); border-color: rgba(255, 107, 107, 0.65); }
 
 /* ---------------- Action buttons ---------------- */
 .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
@@ -819,7 +872,10 @@ input[type="range"]::-moz-range-progress { height: 7px; border-radius: 999px; ba
 
 /* ---------------- Responsive ---------------- */
 @media (max-width: 1080px) {
-  .motion-layout { grid-template-columns: 1fr; }
+  .motion-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas: "joy" "dpad" "actions";
+  }
 }
 
 @media (max-width: 960px) {

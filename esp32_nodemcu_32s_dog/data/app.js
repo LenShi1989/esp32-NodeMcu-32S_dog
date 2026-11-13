@@ -436,7 +436,76 @@ document.addEventListener('keyup', (e) => {
   sendMove(true);
 });
 
+/* ---------------- Direction pad ---------------- */
+const DPAD_VECTORS = {
+  forward: { x: 0, y: 1 },
+  back: { x: 0, y: -1 },
+  left: { x: -1, y: 0 },
+  right: { x: 1, y: 0 },
+};
+
+let dpadDir = null;
+let dpadTimer = null;
+
+function startDpad(dir) {
+  const v = DPAD_VECTORS[dir];
+  if (!v) return;
+  dpadDir = dir;
+  const radius = joyRadius();
+  updateJoyVector(v.x * radius * 0.85, -v.y * radius * 0.85);
+  if (!dpadTimer) dpadTimer = setInterval(() => sendMove(true), 130);
+  sendMove(true);
+}
+
+function stopDpad() {
+  if (!dpadDir && !dpadTimer) return;
+  dpadDir = null;
+  clearInterval(dpadTimer);
+  dpadTimer = null;
+  joyVec = { x: 0, y: 0 };
+  placeKnob(0, 0);
+  updateJoyReadout();
+  sendMove(true);
+}
+
+$$('.dpad-btn').forEach((btn) => {
+  const dir = btn.dataset.dir;
+
+  if (dir === 'stop') {
+    btn.addEventListener('click', async () => {
+      stopDpad();
+      try {
+        const r = await api('/api/action', { action: 'stop' });
+        setMode(r.mode);
+        toast('已停止', 'success');
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    });
+    return;
+  }
+
+  btn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    btn.classList.add('active');
+    try { btn.setPointerCapture(e.pointerId); } catch (_) { /* 部分環境不支援，忽略 */ }
+    startDpad(dir);
+  });
+
+  btn.addEventListener('contextmenu', (e) => e.preventDefault());
+});
+
+// 指標在任何位置放開都要停止，避免滑出按鈕後仍持續前進
+function releaseDpad() {
+  $$('.dpad-btn.active').forEach((btn) => btn.classList.remove('active'));
+  stopDpad();
+}
+window.addEventListener('pointerup', releaseDpad);
+window.addEventListener('pointercancel', releaseDpad);
+window.addEventListener('blur', releaseDpad);
+
 $('#stopBtn').addEventListener('click', async () => {
+  stopDpad();
   joyVec = { x: 0, y: 0 };
   placeKnob(0, 0);
   updateJoyReadout();
