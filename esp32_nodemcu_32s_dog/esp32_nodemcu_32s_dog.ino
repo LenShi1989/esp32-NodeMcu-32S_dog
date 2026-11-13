@@ -1,9 +1,13 @@
 /*
  * DogBot - ESP32 NodeMCU-32S 玩具狗
- * 版本：v1.2.0（2026-11-12）
+ * 版本：v1.3.1（2026-11-13）
  * Arduino IDE 1.8.19 + ESP32 core 2.x / 3.x
  *
  * 版本紀錄：
+ *   v1.3.1  SPIFFS 映像大小自動偵測（修正找不到 /index.html）、
+ *           OTA 上傳前檢查映像大小、狀態 API 增加分割區與前端檔案狀態
+ *   v1.3.0  重寫四足步態：側序步態（一次只抬一隻腳）、非對稱支撐／擺動、
+ *           左右差速轉向；提高行走時的伺服馬達限速，修正只原地抖動的問題
  *   v1.2.0  移植至 ESP32 NodeMCU-32S（ESP32-WROOM-32 / 38-pin，兩側各 19 腳）
  *           依 NodeMCU-32S 腳位重新定義，新增編譯期腳位檢查
  *           狀態 API 增加 board 欄位，OLED/網頁顯示開發板名稱
@@ -21,6 +25,7 @@
 #include <ESPmDNS.h>
 #include <SPIFFS.h>
 #include <Update.h>
+#include <esp_partition.h>
 #include <esp_mac.h>
 #include <esp_system.h>
 
@@ -259,6 +264,12 @@ void updateFaceStatus() {
 // setup / loop
 // ---------------------------------------------------------------------------
 
+// 取得 SPIFFS 分割區資訊，用於診斷映像大小不符的問題
+const esp_partition_t *spiffsPartition() {
+  return esp_partition_find_first(ESP_PARTITION_TYPE_DATA,
+                                  ESP_PARTITION_SUBTYPE_DATA_SPIFFS, nullptr);
+}
+
 void setup() {
   Serial.begin(115200);
   delay(200);
@@ -270,11 +281,22 @@ void setup() {
   digitalWrite(STATUS_LED, LOW);
   randomSeed(esp_random());
 
-  if (!SPIFFS.begin(true)) {
-    Serial.println("[FS] SPIFFS mount failed");
+  const esp_partition_t *fsPart = spiffsPartition();
+  if (fsPart) {
+    Serial.printf("[FS] SPIFFS partition @0x%06X, %u bytes\n",
+                  (unsigned)fsPart->address, (unsigned)fsPart->size);
+  } else {
+    Serial.println("[FS] no SPIFFS partition in this partition table");
+  }
+
+  if (!SPIFFS.begin(false)) {
+    Serial.println("[FS] mount failed (image size != partition size?) - formatting");
+    if (!SPIFFS.begin(true)) Serial.println("[FS] format failed");
   }
   Serial.printf("[FS] used %u / %u bytes\n",
                 (unsigned)SPIFFS.usedBytes(), (unsigned)SPIFFS.totalBytes());
+  Serial.printf("[FS] /index.html %s\n",
+                SPIFFS.exists("/index.html") ? "OK" : "MISSING - upload data/ or spiffs.bin");
 
   dog.begin();
   loadServoConfig();
@@ -369,6 +391,7 @@ void appendFileList(String &j) {
 void handleStatus() {
   bool sta = (WiFi.status() == WL_CONNECTED);
   String currentSsid = sta ? WiFi.SSID() : (apMode ? apSsid : wifiSsid);
+  const esp_partition_t *fsPart = spiffsPartition();
 
   String j;
   j.reserve(2000);
@@ -420,7 +443,13 @@ void handleStatus() {
     if (i) j += ',';
     j += dog.reversed(i) ? F("true") : F("false");
   }
-  j += F("]},\"fs\":{\"total\":");
+  j += F("]},\"fs\":{\"mounted\":");
+  j += (SPIFFS.totalBytes() > 0) ? F("true") : F("false");
+  j += F(",\"webOk\":");
+  j += SPIFFS.exists("/index.html") ? F("true") : F("false");
+  j += F(",\"partition\":");
+  j += String(fsPart ? (unsigned)fsPart->size : 0U);
+  j += F(",\"total\":");
   j += String((unsigned)SPIFFS.totalBytes());
   j += F(",\"used\":");
   j += String((unsigned)SPIFFS.usedBytes());
@@ -647,6 +676,11 @@ void otaStart(HTTPUpload &upload, bool fs) {
                 upload.filename.c_str());
 
   if (fs) {
+    const esp_partition_t *part = spiffsPartition();
+    if (part) {
+      Serial.printf("[OTA] SPIFFS partition: %u bytes (image must match exactly)\n",
+                    (unsigned)part->size);
+    }
     // 直接寫入 SPIFFS 分割區前先卸載檔案系統
     SPIFFS.end();
   }
@@ -660,13 +694,28 @@ void otaStart(HTTPUpload &upload, bool fs) {
 
 void otaEnd(HTTPUpload &upload) {
   if (otaMessage.length() == 0) {
-    if (Update.end(true)) {
-      otaSuccess = true;
-      Serial.printf("[OTA] %s success: %u bytes\n",
-                    otaFsMode ? "SPIFFS" : "firmware", (unsigned)upload.totalSize);
-    } else {
-      otaMessage = otaFsMode ? "SPIFFS 映像驗證失敗" : "韌體驗證失敗";
-      Update.printError(Serial);
+    // SPIFFS 映像必須「剛好等於」分割區大小；太小會掛載失敗並被格式化。
+    if (otaFsMode) {
+      const esp_partition_t *part = spiffsPartition();
+      if (part && upload.totalSize != part->size) {
+        Update.abort();
+        otaMessage = "SPIFFS 映像大小不符：上傳 " + String((unsigned)upload.totalSize) +
+                     " bytes，分割區 " + String((unsigned)part->size) +
+                     " bytes。請用 tools\\build_spiffs 重新建立映像。";
+        Serial.printf("[OTA] SPIFFS size mismatch: got %u, expected %u\n",
+                      (unsigned)upload.totalSize, (unsigned)part->size);
+      }
+    }
+
+    if (otaMessage.length() == 0) {
+      if (Update.end(true)) {
+        otaSuccess = true;
+        Serial.printf("[OTA] %s success: %u bytes\n",
+                      otaFsMode ? "SPIFFS" : "firmware", (unsigned)upload.totalSize);
+      } else {
+        otaMessage = otaFsMode ? "SPIFFS 映像驗證失敗" : "韌體驗證失敗";
+        Update.printError(Serial);
+      }
     }
   }
 
@@ -743,11 +792,12 @@ h1{margin:0 0 8px;font-size:24px}code{background:#0b0f17;padding:2px 6px;border-
 ol{line-height:1.9;color:#b9c4d8}li strong{color:#ffc857}
 </style></head><body><div class="box">
 <h1>🐶 找不到前端檔案</h1>
-<p>SPIFFS 內沒有 <code>/index.html</code>，請先上傳 <code>data/</code> 資料夾。</p>
+<p>SPIFFS 內沒有 <code>/index.html</code>。最常見原因是 <code>spiffs.bin</code> 大小與分割區不符，
+裝置掛載失敗後自動格式化。</p>
 <ol>
-<li>安裝 <strong>ESP32 Sketch Data Upload</strong> 外掛</li>
-<li>Arduino IDE 選擇正確的開發板與序列埠</li>
-<li>Tools → <strong>ESP32 Sketch Data Upload</strong></li>
+<li>在電腦執行 <code>tools\build_spiffs.bat</code>（會自動使用正確的分割區大小）</li>
+<li>到本頁的 <strong>OTA 更新 → SPIFFS .bin</strong> 上傳 <code>build\spiffs.bin</code></li>
+<li>或用 Arduino IDE 的 <strong>Tools → ESP32 Sketch Data Upload</strong> 從 USB 上傳 <code>data/</code></li>
 <li>完成後重新啟動裝置</li>
 </ol>
 </div></body></html>)HTML";

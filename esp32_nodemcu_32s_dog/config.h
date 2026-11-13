@@ -27,7 +27,7 @@
 // ---------------- 開發板 / 韌體資訊 ----------------
 #define BOARD_NAME "ESP32 NodeMCU-32S"
 #define FW_NAME    "DogBot"
-#define FW_VERSION "1.2.0"
+#define FW_VERSION "1.3.1"
 
 // ---------------- OLED SSD1306 (I2C) ----------------
 // NodeMCU-32S 右排：GPIO22 = SCL（由上往下第 3 腳）、GPIO21 = SDA（由上往下第 6 腳）
@@ -62,6 +62,25 @@
 // ---------------- 伺服馬達校正 ----------------
 #define SERVO_CONFIG_FILE "/servo.cfg"
 
+// ---------------- 四足步態 ----------------
+// 一次只擺動一隻腳的「側序步態」（後左 → 前左 → 後右 → 前右）。
+// 每條腿只有一顆馬達，沒有膝關節可以抬腿，因此步態必須靠
+// 「慢速支撐、快速回擺」讓擺動腳離地，並用左右差速產生轉向。
+//
+// GAIT_STRIDE_DEG：單邊最大擺幅（度）。太小抬不起腳，太大容易撞機構。
+#define GAIT_STRIDE_DEG   24.0f
+// 支撐相佔一個週期的比例。0.75 表示同一時間只有一隻腳在擺動，
+// 另外三隻腳支撐；小於 0.75 會出現兩隻腳同時擺動、機身較不穩。
+#define GAIT_STANCE_FRAC  0.75f
+// 步態頻率（Hz）：越大走得越快，建議 1.0～2.0。
+#define GAIT_FREQ_MIN     1.2f
+#define GAIT_FREQ_MAX     1.6f
+// 前進／後退方向相反時改為 -1.0f（左右轉方向也會一起修正）。
+#define GAIT_DIR_SIGN     1.0f
+// 角度變化速度上限（度/秒）。行走時必須夠快，否則步態會被平滑掉。
+#define SERVO_SLEW_WALK   900.0f
+#define SERVO_SLEW_POSE   180.0f
+
 // ===========================================================================
 // 編譯期腳位檢查：接錯腳位會直接編譯失敗，而不是上電後才發現
 // ===========================================================================
@@ -83,3 +102,10 @@ static_assert(SERVO_PIN_FR != SERVO_PIN_RL, "伺服馬達腳位重複：FR / RL"
 static_assert(SERVO_PIN_FR != SERVO_PIN_RR, "伺服馬達腳位重複：FR / RR");
 static_assert(SERVO_PIN_RL != SERVO_PIN_RR, "伺服馬達腳位重複：RL / RR");
 static_assert(OLED_SDA != OLED_SCL, "OLED SDA / SCL 不可使用同一腳位");
+
+static_assert(GAIT_STRIDE_DEG >= 8.0f && GAIT_STRIDE_DEG <= 45.0f,
+              "GAIT_STRIDE_DEG 建議設定在 8~45 度");
+static_assert(GAIT_STANCE_FRAC > 0.5f && GAIT_STANCE_FRAC < 1.0f,
+              "GAIT_STANCE_FRAC 必須介於 0.5 與 1.0 之間");
+static_assert(GAIT_FREQ_MIN > 0.0f && GAIT_FREQ_MAX >= GAIT_FREQ_MIN,
+              "GAIT_FREQ_MIN / GAIT_FREQ_MAX 設定錯誤");

@@ -53,7 +53,8 @@ class DogServo {
   DogMode _mode = MODE_STAND;
   float   _forward = 0.0f;
   float   _turn = 0.0f;
-  float   _phase = 0.0f;
+  float   _phase = 0.0f;      // 步態相位 0.0 ~ 1.0
+  float   _walkGain = 0.0f;   // 起步淡入，避免第一步瞬間拉扯
 
   uint32_t _lastUpdate = 0;
   uint32_t _holdUntil = 0;  // wave / wag 自動返回待機的時間

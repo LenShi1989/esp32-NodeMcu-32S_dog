@@ -113,8 +113,10 @@ function setOnline(state) {
 
 /* ---------------- Status ---------------- */
 let servoSynced = false;
+let deviceStatus = null;
 
 function renderStatus(s) {
+  deviceStatus = s;
   const wifi = s.wifi || {};
 
   $('#wifiModePill').textContent =
@@ -141,11 +143,15 @@ function renderStatus(s) {
   const fs = s.fs || {};
   const used = fs.used || 0;
   const total = fs.total || 1;
+  const partition = fs.partition || 0;
   const pct = Math.min(100, (used / total) * 100);
   $('#fsBar').style.width = pct.toFixed(1) + '%';
-  $('#stFs').textContent = pct.toFixed(0) + '% 已使用';
+  $('#stFs').textContent = fs.webOk === false
+    ? '前端檔案缺失'
+    : pct.toFixed(0) + '% 已使用';
   $('#fsUsed').textContent = fmtBytes(used) + ' 已使用';
-  $('#fsTotal').textContent = fmtBytes(total) + ' 總容量 · ' + fmtBytes(fs.free) + ' 可用';
+  $('#fsTotal').textContent = fmtBytes(total) + ' 總容量 · ' + fmtBytes(fs.free) + ' 可用' +
+    (partition ? ' · 分割區 ' + fmtBytes(partition) : '');
 
   renderFileTable(fs.files || []);
 
@@ -645,6 +651,22 @@ otaBtn.addEventListener('click', () => {
 
 function startOta(file) {
   const isFs = otaTarget === 'fs';
+
+  // 先在瀏覽器端比對 spiffs.bin 大小，避免上傳後才在裝置端失敗
+  if (isFs && deviceStatus && deviceStatus.fs) {
+    const expected = deviceStatus.fs.partition || 0;
+    if (expected && file.size !== expected) {
+      const msg = 'spiffs.bin 大小 ' + fmtBytes(file.size) + ' 與裝置 SPIFFS 分割區 ' +
+        fmtBytes(expected) + ' 不符，請執行 tools\\build_spiffs.bat 重新建立映像。';
+      otaWrap.classList.remove('hidden');
+      otaBar.style.width = '0%';
+      otaPct.textContent = '0%';
+      otaStatus.textContent = msg;
+      setOtaPill('大小不符');
+      toast(msg, 'error');
+      return;
+    }
+  }
 
   otaBtn.disabled = true;
   otaWrap.classList.remove('hidden');

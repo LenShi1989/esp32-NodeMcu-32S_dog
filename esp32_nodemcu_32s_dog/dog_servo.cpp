@@ -12,7 +12,10 @@ namespace {
 // 0=FL 1=FR 2=RL 3=RR
 const uint8_t LEG_PINS[4] = {SERVO_PIN_FL, SERVO_PIN_FR, SERVO_PIN_RL, SERVO_PIN_RR};
 const bool    LEFT_LEG[4] = {true, false, true, false};
-const bool    DIAG_A[4]   = {true, false, false, true};  // 對角步態：FL + RR 同相
+
+// 側序步態相位：後左 → 前左 → 後右 → 前右（一次只擺動一隻腳）。
+// 相位差 0.25，搭配 GAIT_STANCE_FRAC = 0.75 時，任一時刻剛好一隻腳在擺動。
+const float LEG_PHASE[4] = {0.50f, 0.00f, 0.75f, 0.25f};  // FL, FR, RL, RR
 
 // 姿勢角度（可依實際機構調整）
 const float POSE_STAND[4] = {90, 90, 90, 90};
@@ -21,6 +24,24 @@ const float POSE_LIE[4]   = {136, 136, 44, 44};
 
 inline float clampf(float v, float lo, float hi) {
   return v < lo ? lo : (v > hi ? hi : v);
+}
+
+// 0..1 的平滑曲線（兩端速度為 0）
+inline float smoothstep01(float t) {
+  t = clampf(t, 0.0f, 1.0f);
+  return t * t * (3.0f - 2.0f * t);
+}
+
+// 非對稱步態波形：
+//   支撐相（0 ~ GAIT_STANCE_FRAC）：+1 → -1，腳著地慢慢往後推，推動身體前進
+//   擺動相（其餘時間）：-1 → +1，腳快速回到前方
+// 若改用對稱的 sin()，前後擺動的位移會互相抵消，狗狗只會原地抖動。
+inline float gaitWave(float p) {
+  if (p < GAIT_STANCE_FRAC) {
+    return 1.0f - 2.0f * (p / GAIT_STANCE_FRAC);
+  }
+  return -1.0f + 2.0f * smoothstep01((p - GAIT_STANCE_FRAC) /
+                                     (1.0f - GAIT_STANCE_FRAC));
 }
 
 void servoAttach(uint8_t index, uint8_t pin) {
@@ -61,6 +82,8 @@ void DogServo::begin() {
     _written[i] = SERVO_CENTER;
   }
   _mode = MODE_STAND;
+  _phase = 0.0f;
+  _walkGain = 0.0f;
   _lastUpdate = millis();
 }
 
@@ -80,20 +103,36 @@ void DogServo::update() {
     _holdUntil = 0;
   }
 
+  // 只有行走模式需要起步淡入
+  if (_mode != MODE_WALK) _walkGain = 0.0f;
+
   switch (_mode) {
     case MODE_WALK: {
-      float mag  = fmaxf(fabsf(_forward), fabsf(_turn));
-      float freq = 1.3f + 1.7f * mag;              // 0.9 ~ 3 Hz
-      float dir  = (_forward < -0.05f) ? -1.0f : 1.0f;
-      _phase += 2.0f * PI * freq * dir * dt;
-      while (_phase >= 2.0f * PI) _phase -= 2.0f * PI;
-      while (_phase < 0.0f)       _phase += 2.0f * PI;
+      float mag = sqrtf(_forward * _forward + _turn * _turn);
+      mag = clampf(mag, 0.0f, 1.0f);
 
-      float swing = 24.0f * fabsf(_forward) + 13.0f * fabsf(_turn);
+      float freq = GAIT_FREQ_MIN + (GAIT_FREQ_MAX - GAIT_FREQ_MIN) * mag;
+      _phase += freq * dt;
+      _phase -= floorf(_phase);
+
+      _walkGain = clampf(_walkGain + dt * 4.0f, 0.0f, 1.0f);
+
+      // 前進／後退：四隻腳往同一個方向擺動。
+      // 左右轉：左腳與右腳的擺幅相反（差速），讓機身原地旋轉。
+      // 搖桿過半即達到最大擺幅，避免小幅度擺動抬不起腳。
+      float fwdAmp  = GAIT_STRIDE_DEG * GAIT_DIR_SIGN *
+                      clampf(_forward * 1.5f, -1.0f, 1.0f);
+      float turnAmp = GAIT_STRIDE_DEG * GAIT_DIR_SIGN *
+                      clampf(_turn * 1.5f, -1.0f, 1.0f);
+
       for (uint8_t i = 0; i < 4; i++) {
-        float ph   = _phase + (DIAG_A[i] ? 0.0f : PI);
-        float bias = _turn * (LEFT_LEG[i] ? 18.0f : -18.0f);
-        _target[i] = SERVO_CENTER + sinf(ph) * swing + bias;
+        float p = _phase + LEG_PHASE[i];
+        p -= floorf(p);
+
+        float amp = fwdAmp + (LEFT_LEG[i] ? turnAmp : -turnAmp);
+        amp = clampf(amp, -GAIT_STRIDE_DEG, GAIT_STRIDE_DEG);
+
+        _target[i] = SERVO_CENTER + amp * _walkGain * gaitWave(p);
       }
       break;
     }
@@ -133,8 +172,9 @@ void DogServo::update() {
       break;
   }
 
-  // 限速平滑移動，避免 SG90 瞬間跳動
-  float maxStep = 220.0f * dt;
+  // 限速平滑移動，避免 SG90 瞬間跳動。
+  // 行走時上限必須遠高於步態峰值速度，否則非對稱步態會被壓成小幅度擺動。
+  float maxStep = ((_mode == MODE_WALK) ? SERVO_SLEW_WALK : SERVO_SLEW_POSE) * dt;
   for (uint8_t i = 0; i < 4; i++) {
     _target[i] = clampf(_target[i], 0.0f, 180.0f);
     float diff = _target[i] - _current[i];
@@ -162,10 +202,17 @@ void DogServo::setWalk(float forward, float turn) {
     _forward = 0.0f;
     _turn = 0.0f;
     if (_mode == MODE_WALK) _mode = MODE_STAND;
-  } else {
-    _mode = MODE_WALK;
-    _holdUntil = 0;
+    return;
   }
+
+  // 從待機／坐姿進入行走時，重新從相位 0 起步並淡入
+  if (_mode != MODE_WALK) {
+    _phase = 0.0f;
+    _walkGain = 0.0f;
+  }
+
+  _mode = MODE_WALK;
+  _holdUntil = 0;
 }
 
 bool DogServo::action(const String &name) {

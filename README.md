@@ -1,6 +1,6 @@
 # DogBot — ESP32 NodeMCU-32S 玩具狗
 
-> 目前版本：**v1.2.0**（2026-11-12）
+> 目前版本：**v1.3.1**（2026-11-13）
 >
 > 本專案由 [`esp32-D1-mini_dog`](../esp32-D1-mini_dog) 移植，開發板改為
 > **ESP32 NodeMCU-32S（ESP32-WROOM-32 / 38-pin，兩側各 19 腳）**，並依 NodeMCU-32S
@@ -9,7 +9,7 @@
 以 **ESP32 NodeMCU-32S** 製作的四足玩具狗，使用 4 顆 **SG90** 伺服馬達驅動四條腿，
 搭配 **SSD1306 OLED** 顯示隨機表情，並以 **SPIFFS + Web Server** 提供完整的中文控制台。
 
-- 開發環境：**Arduino IDE 1.8.19** + ESP32 core 2.x
+- 開發環境：**Arduino IDE 1.8.19 / 2.x** + ESP32 core 2.x / 3.x
 - 前端：純 HTML / CSS / JavaScript（無外部 CDN，離線可用）
 - 後端：ESP32 WebServer + SPIFFS + OTA
 
@@ -31,7 +31,8 @@
 
 - **SSD1306 128×64 OLED**：隨機表情（開心、眨眼、睡覺、愛心、生氣、頭暈、興奮、走路），
   並顯示目前 IP／AP 位址。
-- **四足步態引擎**：對角步態、非阻塞更新、角度限速平滑移動。
+- **四足步態引擎**：側序步態（一次只抬一隻腳）、非對稱支撐／擺動、左右差速轉向、
+  非阻塞更新、角度限速平滑移動。
 - **特殊姿勢**：坐下、趴下、舉手（3 秒）、撒嬌（4 秒）。
 - **WiFi STA + AP 共存**：AP 熱點常駐（`DogBot-<MAC 後 4 碼>`），連上家用 WiFi 後
   仍可透過熱點進入控制台；STA 斷線會自動重試。
@@ -166,12 +167,14 @@ API 也使用表單編碼與手動 JSON 輸出，不需要 ArduinoJson。
 | Upload Speed | 921600（不穩時改 115200） |
 | CPU Frequency | 240 MHz |
 | Flash Size | 4MB (32Mb) |
-| Partition Scheme | **Minimal SPIFFS (1.9MB APP with OTA)** |
+| Partition Scheme | NodeMCU-32S 固定使用 **Default 4MB with spiffs**（SPIFFS `0x160000`）；選 ESP32 Dev Module 時請選同名方案 |
 | Port | 對應的 COM 埠 |
 
 > 若開發板選單沒有 `NodeMCU-32S`，選擇 `ESP32 Dev Module` 即可，兩者腳位定義相同。
-> OTA 需要具備 OTA 分割區的配置；請勿選用沒有 OTA 的 `Huge APP` 方案。
-> 編譯後韌體約 1.1 MB、前端檔案約 55 KB，`Minimal SPIFFS` 方案已足夠。
+> **ESP32 core 3.x 的 NodeMCU-32S 沒有 Partition Scheme 選單**，固定使用 `default.csv`
+> （app 各 1.25 MB、SPIFFS 偏移 `0x290000`、大小 `0x160000`）。OTA 需要具備 OTA 分割區
+> 的配置，請勿選用沒有 OTA 的 `Huge APP` 方案。
+> 編譯後韌體約 1.1 MB、前端檔案約 57 KB，預設分割區已足夠。
 
 ---
 
@@ -192,10 +195,26 @@ API 也使用表單編碼與手動 JSON 輸出，不需要 ArduinoJson。
 
 ### 2. 上傳前端到 SPIFFS
 
+兩種方式擇一：
+
+**A. Arduino IDE 外掛（USB）**
+
 1. 開啟 `esp32_nodemcu_32s_dog.ino`
 2. 選擇正確的開發板與序列埠
 3. **Tools → ESP32 Sketch Data Upload**
 4. 等待 `SPIFFS Image Uploaded` 訊息
+
+**B. 建立映像後由網頁 OTA 上傳（免插 USB）**
+
+```bat
+tools\build_spiffs.bat
+```
+
+映像會輸出到 `build\spiffs.bin`，大小自動配合目前分割區（NodeMCU-32S 為 `0x160000`）。
+再到網頁 **OTA 更新 → SPIFFS .bin** 上傳即可。
+
+> `spiffs.bin` 的大小必須**完全等於**裝置 SPIFFS 分割區大小。大小不符時
+> `SPIFFS.begin()` 會掛載失敗並自動格式化，網頁就會顯示「找不到前端檔案」。
 
 ### 3. 上傳主程式
 
@@ -267,27 +286,54 @@ tools\build_spiffs.bat
 .\tools\build_spiffs.ps1
 ```
 
-預設輸出 `build/spiffs.bin`，大小 128 KB（`0x20000`），對應
-**Minimal SPIFFS (1.9MB APP with OTA)**。若使用其他分割配置，請以 `-Size` 指定：
+指令稿會自動偵測目前編譯使用的分割區，輸出 `build\spiffs.bin`：
+
+- NodeMCU-32S（ESP32 core 3.x）：SPIFFS 偏移 `0x290000`、大小 **`0x160000`（1,441,792 bytes）**
+- 若尚未編譯過，會退回 ESP32 core 的 `default.csv`
+- 建立後會驗證檔案大小與分割區一致，並確認映像內含 `/index.html`
+
+常用參數：
 
 ```powershell
-.\tools\build_spiffs.ps1 -Size 0x100000 -Out build\big_spiffs.bin
+# 指定分割表（default / min_spiffs / minimal ...）
+.\tools\build_spiffs.ps1 -Scheme default
+
+# data/ 沒變時仍強制重建
+.\tools\build_spiffs.ps1 -Force
+
+# 手動指定大小（一般不需要）
+.\tools\build_spiffs.ps1 -Size 0x160000 -Out build\spiffs.bin
 ```
 
-等價的手動指令：
+等價的手動指令（NodeMCU-32S 預設分割表）：
 
 ```bat
-"%LOCALAPPDATA%\Arduino15\packages\esp32\tools\mkspiffs\0.2.3\mkspiffs.exe" -c esp32_nodemcu_32s_dog\data -b 4096 -p 256 -s 0x20000 build\spiffs.bin
+"%LOCALAPPDATA%\Arduino15\packages\esp32\tools\mkspiffs\0.2.3\mkspiffs.exe" -c esp32_nodemcu_32s_dog\data -b 4096 -p 256 -s 0x160000 build\spiffs.bin
 ```
 
-接著在網頁選擇「SPIFFS .bin」，上傳 `build/spiffs.bin`。
+接著在網頁選擇「SPIFFS .bin」，上傳 `build\spiffs.bin`。
+網頁會先比對檔案大小與裝置分割區，不符時直接提示，不會上傳。
 更新完成後裝置會重新啟動；若瀏覽器仍顯示舊畫面，請強制重新整理（Ctrl+F5）。
+
+若裝置目前已經沒有 `/index.html`（網頁只剩錯誤提示，無法使用網頁 OTA），
+可直接從 USB 燒錄映像。偏移量請用指令稿輸出的 `offset`（NodeMCU-32S 預設為 `0x290000`）：
+
+```bat
+"%LOCALAPPDATA%\Arduino15\packages\esp32\tools\esptool_py\5.3.1\esptool.exe" --chip esp32 --port COM4 --baud 921600 write_flash 0x290000 build\spiffs.bin
+```
+
+> `esptool_py` 的版本號可能不同，請依實際安裝路徑調整；`COM4` 請改成裝置的序列埠。
 
 ### 注意事項
 
 - 更新期間請勿斷電。
 - 若更新失敗，重新上電後仍可透過 USB 重新燒錄。
-- SPIFFS 映像不可大於分割區大小，否則更新會失敗。
+- SPIFFS 映像大小必須**等於**分割區大小（不是「小於」）。太小會掛載失敗並被格式化。
+- 裝置開機序列埠會顯示分割區資訊，可用來確認：
+  ```
+  [FS] SPIFFS partition @0x290000, 1441792 bytes
+  [FS] /index.html OK
+  ```
 
 ---
 
@@ -312,10 +358,11 @@ tools\build_spiffs.bat
 | POST | `/api/ota` | multipart 檔案 | OTA 韌體更新 |
 | POST | `/api/ota/fs` | multipart 檔案 | OTA SPIFFS 映像更新 |
 
-`/api/status` 會多回傳一個 `board` 欄位，例如：
+`/api/status` 的 `fs` 物件包含 `mounted`（是否掛載成功）、`webOk`（是否有 `/index.html`）、
+`partition`（SPIFFS 分割區大小）與 `total` / `used` / `free` / `files`，例如：
 
 ```json
-{"ok":true,"fw":"1.2.0","name":"DogBot","board":"ESP32 NodeMCU-32S","wifi":{...}}
+{"ok":true,"fw":"1.3.1","name":"DogBot","board":"ESP32 NodeMCU-32S","wifi":{...}}
 ```
 
 範例：
@@ -344,6 +391,26 @@ curl -X POST http://192.168.4.1/api/servo -d "ch=1&angle=135"
 ```
 實際角度 = 90 + (邏輯角度 - 90) × (反轉 ? -1 : 1) + 微調
 ```
+
+### 步態參數（前進／後退／轉向）
+
+`config.h` 的「四足步態」區塊可直接調整：
+
+```cpp
+#define GAIT_STRIDE_DEG   24.0f   // 單邊擺幅（度）：太小抬不起腳，太大會撞機構
+#define GAIT_STANCE_FRAC  0.75f   // 支撐相比例：0.75 = 一次只抬一隻腳
+#define GAIT_FREQ_MIN     1.2f    // 最慢步態頻率（Hz）
+#define GAIT_FREQ_MAX     1.6f    // 最快步態頻率（Hz）
+#define GAIT_DIR_SIGN     1.0f    // 前進變成後退時改為 -1.0f
+#define SERVO_SLEW_WALK   900.0f  // 行走時角度變化上限（度/秒）
+#define SERVO_SLEW_POSE   180.0f  // 姿勢切換角度變化上限（度/秒）
+```
+
+> **四顆馬達的方向一定要先校正一致**：在「SG90 測試」把四顆都設成 `110°`，
+> 四條腿應該都往身體的同一側擺。若有一顆反向，勾選該顆的「反轉」。
+> 方向不一致時，步態的力量會互相抵消，狗狗只會原地抖動。
+>
+> 若前進變成後退、左轉變成右轉，將 `GAIT_DIR_SIGN` 改為 `-1.0f` 即可。
 
 ### 伺服馬達腳位／脈寬（NodeMCU-32S）
 
@@ -375,7 +442,7 @@ const float POSE_LIE[4]   = {136, 136, 44, 44};
 ```
 
 陣列順序為 **前左、前右、後左、後右**。可依實際機構修改。
-步態振幅與速度在 `MODE_WALK` 區塊（`swing`、`freq`）調整。
+步態的擺幅、頻率與轉向速度請調整 `config.h` 的「四足步態」區塊。
 
 ### OLED
 
@@ -410,6 +477,8 @@ const float POSE_LIE[4]   = {136, 136, 44, 44};
 | Sketch 資料夾 | `esp32_d1_mini_dog` | `esp32_nodemcu_32s_dog` |
 | 開發板設定 | LOLIN D32 / ESP32 Dev Module | **NodeMCU-32S** / ESP32 Dev Module |
 | 伺服馬達腳位 | GPIO25 / 26 / 27 / 14 | **相同**（NodeMCU-32S 左排由上往下第 9～12 腳） |
+| 步態 | 對角步態（正弦） | **側序步態 + 左右差速轉向** |
+| SPIFFS 分割區 | 依分割配置 | **NodeMCU-32S 固定 default：`0x160000`** |
 | OLED I2C | GPIO21 / 22 | **相同**（NodeMCU-32S 預設 SDA / SCL） |
 | 腳位檢查 | 無 | **編譯期 `static_assert` / `#error`** |
 | 狀態 API | `board` 欄位無 | 新增 `board`，網頁顯示開發板名稱 |
@@ -423,8 +492,15 @@ const float POSE_LIE[4]   = {136, 136, 44, 44};
 ## 常見問題
 
 **Q：網頁顯示「找不到前端檔案」**
-A：SPIFFS 沒有上傳成功。請確認 `data/` 內有 `index.html`、`style.css`、`app.js`，
-並執行 **Tools → ESP32 Sketch Data Upload**。
+A：代表 SPIFFS 掛載失敗後被格式化，通常是 `spiffs.bin` 大小與分割區不符。
+請依序檢查：
+
+1. 序列埠是否顯示 `[FS] mount failed ... formatting` 與 `[FS] /index.html MISSING`。
+2. 重新執行 `tools\build_spiffs.bat`，確認輸出訊息中的 `size` 與裝置分割區相同
+   （NodeMCU-32S 為 `0x160000` / 1,441,792 bytes）。
+3. 到網頁 **OTA 更新 → SPIFFS .bin** 重新上傳 `build\spiffs.bin`；
+   大小不符時網頁會直接阻擋。
+4. 也可以改用 **Tools → ESP32 Sketch Data Upload** 從 USB 上傳 `data/`。
 
 **Q：Tools 選單沒有 ESP32 Sketch Data Upload**
 A：外掛路徑必須是 `Arduino\tools\ESP32FS\tool\esp32fs.jar`，放好後完全關閉並重開 Arduino IDE。
@@ -441,16 +517,27 @@ A：`config.h` 的腳位檢查偵測到僅輸入腳位。請改用 GPIO25 / 26 /
 A：幾乎都是供電問題。請用獨立 5V/2A 電源、共地，並加 470µF 以上電容；
 USB 供電不足以驅動四顆 SG90。NodeMCU-32S 左排最下方的 5V（VIN）腳位不可作為馬達電源。
 
+**Q：四顆馬達都會動，但狗狗只會原地抖動、不會前進／後退／轉向**
+A：先確認四顆馬達的方向一致（見「步態參數」的校正說明），並使用獨立 5V/2A 電源。
+若仍走不動，可依序調整：
+
+1. `GAIT_STRIDE_DEG` 加大到 `28～32`（步長與抬腿高度都會變大）。
+2. `GAIT_FREQ_MIN` / `GAIT_FREQ_MAX` 降到 `1.0` / `1.5`，讓每一步有足夠時間完成。
+3. 在腳底貼橡膠止滑墊；桌面太滑時四顆馬達的推力會互相抵消。
+4. 確認 `GAIT_STANCE_FRAC` 維持 `0.75`，避免兩隻腳同時擺動。
+
 **Q：WiFi 掃描不到網路**
 A：AP 模式下掃描會暫停 AP 廣播數秒，請稍候再試；亦可直接手動輸入 SSID。
 掃描時請靠近路由器。
 
 **Q：OTA 更新失敗**
 A：確認 Partition Scheme 含 OTA、上傳的是 `.bin` 而非 `.elf`，且更新期間未斷電。
-更新 SPIFFS 時請確認 `spiffs.bin` 不超過分割區大小。必要時以 USB 重新燒錄。
+更新 SPIFFS 時，`spiffs.bin` 必須「等於」分割區大小；裝置會回報實際與預期的
+bytes 數。必要時以 USB 重新燒錄。
 
 **Q：更新 SPIFFS 後網頁沒變**
-A：確認上傳的是 `build\spiffs.bin`、大小正確，並在更新後強制重新整理（Ctrl+F5）清除瀏覽器快取。
+A：確認上傳的是 `build\spiffs.bin`、大小正確，序列埠出現 `[FS] /index.html OK`，
+並在更新後強制重新整理（Ctrl+F5）清除瀏覽器快取。
 
 **Q：`dogbot.local` 連不上**
 A：Windows 需安裝 Bonjour；也可直接使用狀態頁顯示的 IP。
