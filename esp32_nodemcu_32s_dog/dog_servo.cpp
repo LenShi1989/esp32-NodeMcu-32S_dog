@@ -133,7 +133,10 @@ void DogServo::update() {
         float amp = fwdAmp + (LEFT_LEG[i] ? turnAmp : -turnAmp);
         amp = clampf(amp, -GAIT_STRIDE_DEG, GAIT_STRIDE_DEG);
 
-        _target[i] = SERVO_CENTER + amp * _walkGain * gaitWave(p);
+        // 每顆馬達可用自己的擺幅上限（預設等於 GAIT_STRIDE_DEG）
+        float legGain = (float)_amp[i] / GAIT_STRIDE_DEG;
+
+        _target[i] = SERVO_CENTER + amp * legGain * _walkGain * gaitWave(p);
       }
       break;
     }
@@ -293,6 +296,15 @@ void DogServo::centerAll() {
   _forward = 0.0f;
   _turn = 0.0f;
   for (uint8_t i = 0; i < 4; i++) _target[i] = SERVO_CENTER;
+}
+
+void DogServo::setAmplitude(uint8_t channel, int deg) {
+  if (channel > 3) return;
+  _amp[channel] = constrain(deg, SERVO_AMP_MIN, SERVO_AMP_MAX);
+}
+
+int DogServo::amplitude(uint8_t channel) const {
+  return channel > 3 ? SERVO_AMP_DEFAULT : _amp[channel];
 }
 
 void DogServo::setCalibration(uint8_t channel, int trim, bool reverse) {

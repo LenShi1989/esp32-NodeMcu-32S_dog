@@ -785,7 +785,21 @@ input[type="range"]::-moz-range-progress { height: 7px; border-radius: 999px; ba
 .servo-calib > label { display: flex; align-items: center; gap: 6px; }
 .servo-calib .check { cursor: pointer; user-select: none; }
 
-.servo-calib input[type="number"] {
+.servo-swing {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.servo-swing label { display: flex; align-items: center; gap: 6px; }
+.servo-swing-note { font-size: 10.5px; color: #59657a; }
+
+.servo-calib input[type="number"],
+.servo-swing input[type="number"] {
   width: 60px;
   padding: 5px 6px;
   border-radius: 8px;
@@ -796,7 +810,8 @@ input[type="range"]::-moz-range-progress { height: 7px; border-radius: 999px; ba
   font-size: 12px;
   outline: none;
 }
-.servo-calib input[type="number"]:focus {
+.servo-calib input[type="number"]:focus,
+.servo-swing input[type="number"]:focus {
   border-color: rgba(255, 200, 87, 0.5);
   box-shadow: 0 0 0 3px rgba(255, 200, 87, 0.09);
 }

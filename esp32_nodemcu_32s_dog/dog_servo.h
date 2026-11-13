@@ -39,6 +39,10 @@ class DogServo {
   void setManual(uint8_t channel, int angle);
   void centerAll();
 
+  // 方向控制擺幅：channel 0~3、deg 2~45（度）
+  void setAmplitude(uint8_t channel, int deg);
+  int  amplitude(uint8_t channel) const;
+
   // 校正：trim 微調（度）、reverse 反轉安裝方向
   void setCalibration(uint8_t channel, int trim, bool reverse);
   int  trim(uint8_t channel) const;
@@ -53,6 +57,8 @@ class DogServo {
   float _target[4]  = {SERVO_CENTER, SERVO_CENTER, SERVO_CENTER, SERVO_CENTER};
   int   _written[4] = {-1, -1, -1, -1};
   int   _trim[4] = {0, 0, 0, 0};
+  int   _amp[4] = {SERVO_AMP_DEFAULT, SERVO_AMP_DEFAULT,
+                   SERVO_AMP_DEFAULT, SERVO_AMP_DEFAULT};
   bool  _rev[4] = {false, false, false, false};
 
   DogMode _mode = MODE_STAND;

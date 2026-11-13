@@ -643,6 +643,10 @@ function setCalibValues(servo) {
     const el = $('#rev' + ch);
     if (el) el.checked = !!rev;
   });
+  (servo.amp || []).forEach((amp, ch) => {
+    const el = $('#amp' + ch);
+    if (el && document.activeElement !== el) el.value = amp;
+  });
 }
 
 $$('input[type="range"][data-ch]').forEach((input) => {
@@ -674,8 +678,17 @@ function sendCalib(ch) {
     if (!trimInput || !revInput) return;
     const trim = parseInt(trimInput.value, 10) || 0;
     const rev = revInput.checked ? 1 : 0;
+    const body = { ch, trim, rev };
+    const ampInput = $('#amp' + ch);
+    if (ampInput) {
+      let amp = parseInt(ampInput.value, 10);
+      if (!Number.isFinite(amp)) amp = 24;
+      amp = Math.max(2, Math.min(45, amp));
+      ampInput.value = amp;
+      body.amp = amp;
+    }
     try {
-      const r = await api('/api/servo/calib', { ch, trim, rev });
+      const r = await api('/api/servo/calib', body);
       if (r && r.mode) setMode(r.mode);
     } catch (err) {
       toast(err.message, 'error');
@@ -690,6 +703,11 @@ $$('input[data-trim]').forEach((input) => {
 
 $$('input[data-rev]').forEach((input) => {
   input.addEventListener('change', () => sendCalib(input.dataset.rev));
+});
+
+$$('input[data-amp]').forEach((input) => {
+  input.addEventListener('input', () => sendCalib(input.dataset.amp));
+  input.addEventListener('change', () => sendCalib(input.dataset.amp));
 });
 
 $('#resetCalib').addEventListener('click', async () => {

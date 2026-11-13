@@ -27,7 +27,7 @@
 // ---------------- 開發板 / 韌體資訊 ----------------
 #define BOARD_NAME "ESP32 NodeMCU-32S"
 #define FW_NAME    "DogBot"
-#define FW_VERSION "1.5.0"
+#define FW_VERSION "1.6.0"
 
 // ---------------- OLED SSD1306 (I2C) ----------------
 // NodeMCU-32S 右排：GPIO22 = SCL（由上往下第 3 腳）、GPIO21 = SDA（由上往下第 6 腳）
@@ -77,6 +77,13 @@
 #define GAIT_FREQ_MAX     1.6f
 // 前進／後退方向相反時改為 -1.0f（左右轉方向也會一起修正）。
 #define GAIT_DIR_SIGN     1.0f
+
+// 每顆馬達在「方向控制（行走）」時的擺動幅度上限（度）。
+// 可在網頁「SG90 測試」頁個別調整，設定會存到 SPIFFS；
+// 預設值等於 GAIT_STRIDE_DEG，數值越大步伐越大。
+#define SERVO_AMP_DEFAULT  ((int)(GAIT_STRIDE_DEG))
+#define SERVO_AMP_MIN      2
+#define SERVO_AMP_MAX      45
 // 角度變化速度上限（度/秒）。行走時必須夠快，否則步態會被平滑掉。
 #define SERVO_SLEW_WALK   900.0f
 #define SERVO_SLEW_POSE   180.0f

@@ -1,9 +1,11 @@
 /*
  * DogBot - ESP32 NodeMCU-32S 玩具狗
- * 版本：v1.5.0（2026-11-13）
+ * 版本：v1.6.0（2026-11-13）
  * Arduino IDE 1.8.19 + ESP32 core 2.x / 3.x
  *
  * 版本紀錄：
+ *   v1.6.0  新增每顆馬達「方向控制擺幅」設定（網頁 SG90 測試頁）
+ *           校正設定檔 servo.cfg 增加第三欄擺幅
  *   v1.5.0  新增表情切換 API（/api/face）與 OLED 悲傷／錯誤表情
  *           網頁新增「表情切換」卡片
  *   v1.4.0  新增「撒尿」與「自定義動作」指令
@@ -127,7 +129,7 @@ bool saveWifiConfig(const String &ssid, const String &pass) {
 
 // ---------------------------------------------------------------------------
 // 伺服馬達校正設定（存於 SPIFFS /servo.cfg）
-// 格式：channel=trim,reverse
+// 格式：channel=trim,reverse,amp（舊版只有 trim,reverse 也能讀取）
 // ---------------------------------------------------------------------------
 
 void loadServoConfig() {
@@ -148,9 +150,21 @@ void loadServoConfig() {
     String val = line.substring(eq + 1);
     int comma = val.indexOf(',');
     int trim = (comma >= 0) ? val.substring(0, comma).toInt() : val.toInt();
-    bool rev = (comma >= 0) && (val.substring(comma + 1).toInt() != 0);
+    bool rev = false;
+    int amp = SERVO_AMP_DEFAULT;
+
+    if (comma >= 0) {
+      String rest = val.substring(comma + 1);
+      int comma2 = rest.indexOf(',');
+      rev = ((comma2 >= 0 ? rest.substring(0, comma2) : rest).toInt() != 0);
+      if (comma2 >= 0) {
+        int parsed = rest.substring(comma2 + 1).toInt();
+        if (parsed >= SERVO_AMP_MIN && parsed <= SERVO_AMP_MAX) amp = parsed;
+      }
+    }
 
     dog.setCalibration((uint8_t)ch, trim, rev);
+    dog.setAmplitude((uint8_t)ch, amp);
   }
   f.close();
 
@@ -162,7 +176,8 @@ bool saveServoConfig() {
   if (!f) return false;
 
   for (uint8_t i = 0; i < 4; i++) {
-    f.printf("%u=%d,%u\n", i, dog.trim(i), dog.reversed(i) ? 1 : 0);
+    f.printf("%u=%d,%u,%d\n", i, dog.trim(i), dog.reversed(i) ? 1 : 0,
+             dog.amplitude(i));
   }
   f.close();
   return true;
@@ -449,6 +464,11 @@ void handleStatus() {
     if (i) j += ',';
     j += dog.reversed(i) ? F("true") : F("false");
   }
+  j += F("],\"amp\":[");
+  for (int i = 0; i < 4; i++) {
+    if (i) j += ',';
+    j += String(dog.amplitude(i));
+  }
   j += F("]},\"fs\":{\"mounted\":");
   j += (SPIFFS.totalBytes() > 0) ? F("true") : F("false");
   j += F(",\"webOk\":");
@@ -673,6 +693,11 @@ void sendServoState() {
     if (i) j += ',';
     j += dog.reversed(i) ? F("true") : F("false");
   }
+  j += F("],\"amp\":[");
+  for (int i = 0; i < 4; i++) {
+    if (i) j += ',';
+    j += String(dog.amplitude(i));
+  }
   j += F("],\"mode\":\"");
   j += dog.modeName();
   j += F("\"}");
@@ -715,14 +740,19 @@ void handleServoCalib() {
   bool rev = server.hasArg("rev")
                  ? (server.arg("rev") == "1" || server.arg("rev") == "true")
                  : dog.reversed((uint8_t)ch);
+  int amp = server.hasArg("amp") ? server.arg("amp").toInt() : dog.amplitude((uint8_t)ch);
 
   dog.setCalibration((uint8_t)ch, trim, rev);
+  dog.setAmplitude((uint8_t)ch, amp);
   saveServoConfig();
   sendServoState();
 }
 
 void handleServoCalibReset() {
-  for (uint8_t i = 0; i < 4; i++) dog.setCalibration(i, 0, false);
+  for (uint8_t i = 0; i < 4; i++) {
+    dog.setCalibration(i, 0, false);
+    dog.setAmplitude(i, SERVO_AMP_DEFAULT);
+  }
   saveServoConfig();
   sendServoState();
 }

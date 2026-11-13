@@ -319,7 +319,9 @@
         <p class="hint">
           拖曳滑桿即時調整四顆馬達。調整時會進入「手動測試」模式並暫停行走；
           按上方「回到待機」或任一做作指令即可恢復。
-          「微調」可修正馬達中立點，「反轉」用於左右腳安裝方向相反時，設定會自動存到 SPIFFS。
+          「微調」可修正馬達中立點，「反轉」用於左右腳安裝方向相反時，
+          「擺幅」是該顆馬達在方向控制（行走）時的擺動幅度上限（2°～45°），
+          設定會自動存到 SPIFFS。
         </p>
 
         <div class="servo-grid">
@@ -331,6 +333,10 @@
               <label>微調 <input type="number" min="-30" max="30" step="1" value="0" data-trim="0" id="trim0"></label>
               <label class="check"><input type="checkbox" data-rev="0" id="rev0"><span>反轉</span></label>
             </div>
+            <div class="servo-swing">
+              <label>擺幅 <input type="number" min="2" max="45" step="1" value="24" data-amp="0" id="amp0"><span>°</span></label>
+              <span class="servo-swing-note">方向控制</span>
+            </div>
           </div>
           <div class="servo-item">
             <div class="servo-top"><span>M2 · 前右</span><output id="srv1Val">90°</output></div>
@@ -339,6 +345,10 @@
             <div class="servo-calib">
               <label>微調 <input type="number" min="-30" max="30" step="1" value="0" data-trim="1" id="trim1"></label>
               <label class="check"><input type="checkbox" data-rev="1" id="rev1"><span>反轉</span></label>
+            </div>
+            <div class="servo-swing">
+              <label>擺幅 <input type="number" min="2" max="45" step="1" value="24" data-amp="1" id="amp1"><span>°</span></label>
+              <span class="servo-swing-note">方向控制</span>
             </div>
           </div>
           <div class="servo-item">
@@ -349,6 +359,10 @@
               <label>微調 <input type="number" min="-30" max="30" step="1" value="0" data-trim="2" id="trim2"></label>
               <label class="check"><input type="checkbox" data-rev="2" id="rev2"><span>反轉</span></label>
             </div>
+            <div class="servo-swing">
+              <label>擺幅 <input type="number" min="2" max="45" step="1" value="24" data-amp="2" id="amp2"><span>°</span></label>
+              <span class="servo-swing-note">方向控制</span>
+            </div>
           </div>
           <div class="servo-item">
             <div class="servo-top"><span>M4 · 後右</span><output id="srv3Val">90°</output></div>
@@ -357,6 +371,10 @@
             <div class="servo-calib">
               <label>微調 <input type="number" min="-30" max="30" step="1" value="0" data-trim="3" id="trim3"></label>
               <label class="check"><input type="checkbox" data-rev="3" id="rev3"><span>反轉</span></label>
+            </div>
+            <div class="servo-swing">
+              <label>擺幅 <input type="number" min="2" max="45" step="1" value="24" data-amp="3" id="amp3"><span>°</span></label>
+              <span class="servo-swing-note">方向控制</span>
             </div>
           </div>
         </div>
