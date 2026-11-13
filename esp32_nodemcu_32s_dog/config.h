@@ -27,7 +27,7 @@
 // ---------------- 開發板 / 韌體資訊 ----------------
 #define BOARD_NAME "ESP32 NodeMCU-32S"
 #define FW_NAME    "DogBot"
-#define FW_VERSION "1.4.0"
+#define FW_VERSION "1.5.0"
 
 // ---------------- OLED SSD1306 (I2C) ----------------
 // NodeMCU-32S 右排：GPIO22 = SCL（由上往下第 3 腳）、GPIO21 = SDA（由上往下第 6 腳）

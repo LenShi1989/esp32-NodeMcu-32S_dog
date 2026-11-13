@@ -10,7 +10,9 @@ enum DogMood : uint8_t {
   MOOD_ANGRY,
   MOOD_DIZZY,
   MOOD_EXCITED,
-  MOOD_WALK
+  MOOD_WALK,
+  MOOD_SAD,
+  MOOD_ERROR
 };
 
 // SSD1306 表情顯示

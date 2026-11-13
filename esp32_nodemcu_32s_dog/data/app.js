@@ -538,6 +538,21 @@ $$('.action-btn').forEach((btn) => {
   });
 });
 
+/* ---------------- Face / mood ---------------- */
+$$('.face-btn').forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    btn.classList.add('busy');
+    try {
+      await api('/api/face', { mood: btn.dataset.mood });
+      toast('表情 · ' + btn.querySelector('span:last-child').textContent, 'success');
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setTimeout(() => btn.classList.remove('busy'), 320);
+    }
+  });
+});
+
 /* ---------------- Custom action ---------------- */
 const CUSTOM_IDS = ['cust0', 'cust1', 'cust2', 'cust3'];
 

@@ -153,6 +153,23 @@ void DogFace::drawEyes(uint32_t now, uint32_t age) {
       _display.drawLine(cx2 + 12, cy - 12, cx2 + 12, cy - 7, SSD1306_WHITE);
       break;
 
+    case MOOD_SAD: {
+      // 垂眼（∩ 形）＋ 右眼下方一滴眼淚
+      drawCurve(cx1, cy, 16, 4, false);
+      drawCurve(cx2, cy, 16, 4, false);
+      int drop = 6 + (int)((age / 250) % 5);
+      _display.fillCircle(cx2 + 2, cy + drop, 2, SSD1306_WHITE);
+      break;
+    }
+
+    case MOOD_ERROR:
+      // 叉叉眼
+      _display.drawLine(cx1 - 7, cy - 7, cx1 + 7, cy + 7, SSD1306_WHITE);
+      _display.drawLine(cx1 + 7, cy - 7, cx1 - 7, cy + 7, SSD1306_WHITE);
+      _display.drawLine(cx2 - 7, cy - 7, cx2 + 7, cy + 7, SSD1306_WHITE);
+      _display.drawLine(cx2 + 7, cy - 7, cx2 - 7, cy + 7, SSD1306_WHITE);
+      break;
+
     case MOOD_WALK: {
       int dx = (int)(sinf(now * 0.008f) * 4.0f);
       _display.fillRoundRect(cx1 - 6 + dx, cy - 6, 12, 12, 6, SSD1306_WHITE);
@@ -208,6 +225,12 @@ void DogFace::render() {
     case MOOD_LOVE:
       drawCurve(64, 43, 22, 5, true);
       _display.fillCircle(64, 49, 3, SSD1306_WHITE);
+      break;
+    case MOOD_SAD:
+      drawCurve(64, 49, 20, 4, false);
+      break;
+    case MOOD_ERROR:
+      _display.drawRect(56, 41, 16, 10, SSD1306_WHITE);
       break;
     default:
       drawCurve(64, 43, 22, 5, true);

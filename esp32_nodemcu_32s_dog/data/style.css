@@ -456,7 +456,8 @@ button:active { transform: scale(0.98); }
   grid-template-columns: minmax(300px, 1.05fr) minmax(300px, 1fr);
   grid-template-areas:
     "joy actions"
-    "dpad actions";
+    "dpad actions"
+    "face actions";
   gap: 16px;
   align-items: start;
 }
@@ -464,6 +465,7 @@ button:active { transform: scale(0.98); }
 
 .joystick-card { grid-area: joy; display: flex; flex-direction: column; align-items: center; }
 .dpad-card { grid-area: dpad; }
+.face-card { grid-area: face; }
 .actions-card { grid-area: actions; }
 
 .joystick {
@@ -585,6 +587,33 @@ button:active { transform: scale(0.98); }
 }
 .dpad-btn.stop:hover { background: rgba(255, 107, 107, 0.2); border-color: rgba(255, 107, 107, 0.5); }
 .dpad-btn.stop.active { background: rgba(255, 107, 107, 0.28); border-color: rgba(255, 107, 107, 0.65); }
+
+/* ---------------- Face switch ---------------- */
+.face-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+  gap: 10px;
+  margin: 4px 0 14px;
+}
+
+.face-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 13px 6px 11px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: border-color 0.18s, background 0.18s, transform 0.12s;
+}
+.face-btn:hover { border-color: rgba(255, 200, 87, 0.4); background: rgba(255, 200, 87, 0.075); }
+.face-btn:active, .face-btn.busy { transform: scale(0.97); border-color: rgba(255, 200, 87, 0.6); }
+.face-ico { font-size: 21px; line-height: 1; }
 
 /* ---------------- Action buttons ---------------- */
 .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
@@ -874,7 +903,7 @@ input[type="range"]::-moz-range-progress { height: 7px; border-radius: 999px; ba
 @media (max-width: 1080px) {
   .motion-layout {
     grid-template-columns: 1fr;
-    grid-template-areas: "joy" "dpad" "actions";
+    grid-template-areas: "joy" "dpad" "face" "actions";
   }
 }
 

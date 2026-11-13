@@ -1,9 +1,11 @@
 /*
  * DogBot - ESP32 NodeMCU-32S 玩具狗
- * 版本：v1.4.0（2026-11-13）
+ * 版本：v1.5.0（2026-11-13）
  * Arduino IDE 1.8.19 + ESP32 core 2.x / 3.x
  *
  * 版本紀錄：
+ *   v1.5.0  新增表情切換 API（/api/face）與 OLED 悲傷／錯誤表情
+ *           網頁新增「表情切換」卡片
  *   v1.4.0  新增「撒尿」與「自定義動作」指令
  *           網頁新增自定義角度編輯器與維持時間設定
  *   v1.3.1  SPIFFS 映像大小自動偵測（修正找不到 /index.html）、
@@ -617,6 +619,42 @@ void handleAction() {
   server.send(200, "application/json; charset=utf-8", j);
 }
 
+// 表情切換：mood=happy/angry/sad/joy/error/love/sleep/dizzy/blink、hold=毫秒
+void handleFace() {
+  String mood = server.hasArg("mood") ? server.arg("mood") : "";
+  mood.trim();
+  mood.toLowerCase();
+
+  long hold = server.hasArg("hold") ? server.arg("hold").toInt() : 8000;
+  if (hold < 1000) hold = 1000;
+  if (hold > 60000) hold = 60000;
+
+  DogMood m;
+  if (mood == "happy")      m = MOOD_HAPPY;
+  else if (mood == "angry") m = MOOD_ANGRY;
+  else if (mood == "sad")   m = MOOD_SAD;
+  else if (mood == "joy")   m = MOOD_EXCITED;
+  else if (mood == "error") m = MOOD_ERROR;
+  else if (mood == "love")  m = MOOD_LOVE;
+  else if (mood == "sleep") m = MOOD_SLEEP;
+  else if (mood == "dizzy") m = MOOD_DIZZY;
+  else if (mood == "blink") m = MOOD_BLINK;
+  else {
+    server.send(400, "application/json; charset=utf-8",
+                "{\"ok\":false,\"error\":\"未知的表情\"}");
+    return;
+  }
+
+  face.setMood(m, (uint32_t)hold);
+
+  String j = F("{\"ok\":true,\"mood\":\"");
+  j += mood;
+  j += F("\",\"hold\":");
+  j += String(hold);
+  j += F("}");
+  server.send(200, "application/json; charset=utf-8", j);
+}
+
 void sendServoState() {
   String j = F("{\"ok\":true,\"manual\":");
   j += (dog.mode() == MODE_MANUAL) ? F("true") : F("false");
@@ -889,6 +927,7 @@ void setupWebServer() {
   server.on("/api/wifi/clear", HTTP_POST, handleWifiClear);
   server.on("/api/move", HTTP_POST, handleMove);
   server.on("/api/action", HTTP_POST, handleAction);
+  server.on("/api/face", HTTP_POST, handleFace);
   server.on("/api/servo", HTTP_POST, handleServo);
   server.on("/api/servo/center", HTTP_POST, handleServoCenter);
   server.on("/api/servo/calib", HTTP_POST, handleServoCalib);
